@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "docoloco"
+version = "0.1.0"
+description = ""
+authors = ["Mussa Mipawa <mepowerleo10@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pygobject = "^3.46.0"
+pygobject-stubs = "^2.10.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
