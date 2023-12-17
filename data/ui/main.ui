@@ -1,0 +1,92 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.16.0 -->
+<interface>
+  <!-- interface-name main.ui -->
+  <requires lib="libadwaita" version="1.4"/>
+  <requires lib="gio" version="2.0"/>
+  <requires lib="gtk" version="4.12"/>
+  <template class="ApplicationWindow" parent="AdwApplicationWindow">
+    <property name="content">
+      <object class="AdwTabOverview" id="tab_overview">
+        <property name="child">
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="AdwHeaderBar" id="header_bar">
+                <property name="title-widget">
+                  <object class="GtkEntry" id="search_entry">
+                    <property name="placeholder-text">Press Ctrl+P to find a documentation</property>
+                    <property name="width-request">450</property>
+                  </object>
+                </property>
+                <child type="start">
+                  <object class="GtkButton">
+                    <property name="icon-name">window-new-symbolic</property>
+                  </object>
+                </child>
+                <child type="start">
+                  <object class="GtkBox">
+                    <child>
+                      <object class="GtkButton">
+                        <property name="action-name">win.go_back</property>
+                        <property name="icon-name">go-previous-symbolic</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkButton">
+                        <property name="action-name">win.go_forward</property>
+                        <property name="icon-name">go-next-symbolic</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child type="end">
+                  <object class="GtkMenuButton">
+                    <property name="icon-name">open-menu-symbolic</property>
+                    <property name="menu-model">primary_menu</property>
+                    <property name="tooltip-text">Main Menu</property>
+                  </object>
+                </child>
+                <child type="end">
+                  <object class="GtkButton">
+                    <property name="action-name">overview.open</property>
+                    <property name="icon-name">view-grid-symbolic</property>
+                    <property name="tooltip-text">View Open Tabs</property>
+                  </object>
+                </child>
+                <child type="end">
+                  <object class="GtkButton">
+                    <property name="icon-name">tab-new-symbolic</property>
+                    <signal name="clicked" handler="new_tab"/>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwTabBar" id="tab_bar"/>
+            </child>
+            <child>
+              <object class="AdwTabView" id="view">
+                <property name="vexpand">True</property>
+              </object>
+            </child>
+          </object>
+        </property>
+        <property name="enable-new-tab">True</property>
+        <property name="view">view</property>
+        <signal name="create-tab" handler="new_tab"/>
+      </object>
+    </property>
+    <property name="height-request">450</property>
+    <property name="vexpand">True</property>
+    <property name="vexpand-set">True</property>
+  </template>
+  <menu id="primary_menu">
+    <section>
+      <item>
+        <attribute name="action">app.about</attribute>
+        <attribute name="label">About</attribute>
+      </item>
+    </section>
+  </menu>
+</interface>

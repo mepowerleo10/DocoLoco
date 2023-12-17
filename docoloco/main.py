@@ -1,7 +1,7 @@
 import sys
 import gi
 
-from .window import Window
+from .window import ApplicationWindow
 
 from .registry import initialize_providers, registered_providers
 
@@ -17,7 +17,7 @@ class DocoLoco(Adw.Application):
         self.connect("activate", self.on_activate)
 
     def on_activate(self, app):
-        self.win = Window(app, registered_providers[0].docs)
+        self.win = ApplicationWindow(app, registered_providers[0].docs)
         self.win.set_application(self)
         self.win.present()
 

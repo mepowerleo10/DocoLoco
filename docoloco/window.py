@@ -1,72 +1,126 @@
+from .config import Config
+import gi
 from typing import List, cast
-from gi.repository import Adw, Gtk, Gdk, Gio, GLib, GObject
 
-from .registry import DocSet
+gi.require_version("Gtk", "4.0")
+gi.require_version("Adw", "1")
+from gi.repository import Adw, Gtk, Gdk, Gio, GLib, GObject, WebKit
+
+from .registry import DocSet, registered_providers
+
+config = Config()
 
 
-class Window(Gtk.ApplicationWindow):
-    __gtype_name__ = "Window"
+@Gtk.Template(filename=f"{config.ui_path}/new_page.ui")
+class NewPage(Adw.Bin):
+    __gtype_name__ = "NewPage"
+    box = cast(Gtk.FlowBox, Gtk.Template.Child("docsets"))
 
-    def __init__(self, app, docs):
-        """Initialize the main window"""
+    def __init__(self):
+        super().__init__()
 
-        super().__init__(application=app, title="Documentation Browser")
+        docs = registered_providers[0].docs
+        for doc in docs:
+            card = DocSetCard(doc)
+            self.box.append(card)
 
-        self.set_default_size(600, 600)
-        self.set_title("Documentation Browser")
 
-        Gtk.Settings.get_default().set_property("gtk-icon-theme-name", "Adwaita")
+@Gtk.Template(filename=config.ui("doc_page"))
+class DocPage(Adw.Bin):
+    __gtype_name__ = "DocPage"
 
-        self.overlay_split_view = Adw.OverlaySplitView.new()
-        self.set_child(self.overlay_split_view)
+    web_view = cast(WebKit.WebView, Gtk.Template.Child("web_view"))
+    search_bar = cast(Gtk.SearchBar, Gtk.Template.Child("search_bar"))
+    search_count_label = cast(Gtk.Label, Gtk.Template.Child("search_count_label"))
+    search_entry = cast(Gtk.SearchEntry, Gtk.Template.Child("entry"))
+    search_ready = False
 
-        self.docs: List[DocSet] = docs
+    def __init__(self, docset: DocSet = None, uri: str = None):
+        super().__init__(hexpand=True, vexpand=True)
+        self.docset = docset
 
-        # Sidebar
-        self.sidebar_content_box = Gtk.Box(
-            orientation=Gtk.Orientation.VERTICAL, spacing=10
+        if uri:
+            self.load_uri(uri)
+        else:
+            self.set_child(NewPage())
+
+    def load_uri(self, uri: str):
+        self.setup_search_signals()
+        self.web_view.load_uri(uri)
+
+    def setup_search_signals(self):
+        # web_view.bind_property("title", self, "title", GObject.BindingFlags.DEFAULT)
+
+        self.search_bar.connect_entry(self.search_entry)
+        self.search_bar.key_capture_widget = self
+
+        self.find_controller = self.web_view.get_find_controller()
+        self.find_controller.connect("counted-matches", self.counted_matches)
+        self.find_controller.connect(
+            "failed-to-find-text", lambda f: self.search_entry.add_css_class("error")
+        )
+        self.find_controller.connect(
+            "found-text", lambda f, v: self.search_entry.remove_css_class("error")
         )
 
-        self.sidebar_content_box.set_margin_start(6)
-        self.sidebar_content_box.set_margin_end(6)
-        self.sidebar_content_box.set_margin_top(6)
-        self.sidebar_content_box.set_margin_bottom(6)
+    def counted_matches(self, find_controller, count):
+        self.search_ready = True
+        self.search_count_label.set_label(f"{count} matches")
 
-        # Create the search entry
-        search_entry = Gtk.SearchEntry()
-        search_entry.connect("search-changed", self.on_search_changed)
-        self.sidebar_content_box.append(search_entry)
+    def failed_to_find_text(self, find_controller):
+        self.search_entry.add_css_class("error")
 
-        # Create the listbox
-        self.listbox = Gtk.ListBox()
-        self.sidebar_content_box.append(self.listbox)
+    @Gtk.Template.Callback()
+    def search_started(self, entry: Gtk.SearchEntry):
+        text = entry.get_text()
+        self.find_controller.search(text, WebKit.FindOptions.CASE_INSENSITIVE, 1000)
+        self.find_controller.count_matches(
+            text, WebKit.FindOptions.CASE_INSENSITIVE, 1000
+        )
 
-        # self.scrolled_box = Gtk.ScrolledWindow.new()
-        # sidebar_content_box.append(self.scrolled_box)
+    @Gtk.Template.Callback()
+    def search_stopped(self, *args):
+        self.search_ready = False
+        self.find_controller.search_finish()
 
-        self.overlay_split_view.set_sidebar(self.sidebar_content_box)
+    @Gtk.Template.Callback()
+    def search_next(self, *args):
+        self.find_controller.search_next()
 
-        self.create_document_rows()
+    @Gtk.Template.Callback()
+    def search_previous(self, *args):
+        self.find_controller.search_previous()
 
-    def create_document_rows(self):
-        for doc in self.docs:
-            row = Gtk.ListBoxRow()
-            text_expander = Gtk.Expander(label=doc.title)
-            details = Gtk.Label(label=doc.index_file_path)
-            text_expander.set_child(details)
 
-            row.set_child(text_expander)
-            self.listbox.append(row)
+@Gtk.Template(filename=config.ui("doc_set_card"))
+class DocSetCard(Adw.Bin):
+    __gtype_name__ = "DocSetCard"
+    title = cast(Gtk.Label, Gtk.Template.Child("title"))
+    version = cast(Gtk.Label, Gtk.Template.Child("version"))
+    index_path = cast(Gtk.Label, Gtk.Template.Child("index_path"))
 
-    def on_search_changed(self, search_entry: Gtk.SearchEntry):
-        query = search_entry.get_text().lower()
+    def __init__(self, doc: DocSet, **kwargs):
+        super().__init__(**kwargs)
 
-        for row in self.listbox.observe_children():
-            row = cast(Gtk.ListBoxRow, row)
-            expander: Gtk.Expander = row.get_child()
-            label_text = expander.get_label().lower()
-            row.set_visible(query in label_text)
+        self.title.set_label(doc.title)
+        self.version.set_label(doc.version if doc.version else "Unknown")
+        self.index_path.set_label(doc.index_file_path.as_posix())
 
-    def on_document_row_toggled(self, button: Gtk.Button, hbox: Gtk.Box):
-        for child in hbox.get_children():
-            child.set_visible(not child.get_visible())
+
+@Gtk.Template(filename="data/ui/main.ui")
+class ApplicationWindow(Adw.ApplicationWindow):
+    __gtype_name__ = "ApplicationWindow"
+    tab_view = cast(Adw.TabView, Gtk.Template.Child("view"))
+
+    def __init__(self, app, docs: List[DocSet]):
+        super().__init__(application=app, title="DocoLoco")
+        self.docs = docs
+
+        if self.tab_view.get_n_pages() == 0:
+            self.new_tab()
+
+    @Gtk.Template.Callback()
+    def new_tab(self, *args, **kwargs):
+        page = DocPage(uri="http://google.com")
+        self.tab_view.append(page)
+        # self.tab_view.set_selected_page(page)

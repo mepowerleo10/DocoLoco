@@ -1,6 +1,7 @@
 
 from abc import ABC
 from pathlib import Path
+from typing import List
 
 from .models import DocSet
 
@@ -10,7 +11,7 @@ class DocumentationProvider(ABC):
         super().__init__()
 
         self.name: str = None
-        self.docs = list()
+        self.docs: List[DocSet] = list()
         self.root_path: Path = None
 
     def load(self) -> None:

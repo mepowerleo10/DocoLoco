@@ -7,6 +7,12 @@ import plistlib
 import sqlite3
 from typing import Dict, List, Optional, cast
 
+import gi
+
+gi.require_version("Gtk", "4.0")
+gi.require_version("Adw", "1")
+from gi.repository import Adw, Gtk, Gdk, Gio, GLib, GObject
+
 
 @dataclass
 class DocumentationSearchIndex:
@@ -35,7 +41,7 @@ class InfoPlist:
     IsJavaScriptEnabled = "isJavaScriptEnabled"
 
 
-class DocSet:
+class DocSet(GObject.Object):
     class Type(Enum):
         DASH = 1
         ZDASH = 2
@@ -54,7 +60,7 @@ class DocSet:
 
         # Optional Description fields
         self.is_javascript_enabled: bool = None
-        self.index_file_path: str = None
+        self.index_file_path: Path = None
         self.type = self.Type.DASH
 
         self.meta: Dict = None
@@ -185,10 +191,13 @@ class DocSet:
             symbol_list = self.symbol_strings.get(symbol_type_key, list())
             symbol_list.append(symbol_type_value)
             self.symbol_strings[symbol_type_key] = symbol_list
-            self.symbol_counts[symbol_type_key] = self.symbol_counts.get(
-                symbol_type_value,
-                0,
-            ) + row.count
+            self.symbol_counts[symbol_type_key] = (
+                self.symbol_counts.get(
+                    symbol_type_value,
+                    0,
+                )
+                + row.count
+            )
 
     def parse_symbol_type(self, value: str):
         aliases = {
@@ -320,3 +329,6 @@ class DocSet:
         }
 
         return aliases.get(value, value)
+
+class DocPage(Adw.Bin):
+    docset = DocSet
