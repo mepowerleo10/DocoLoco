@@ -101,7 +101,6 @@
 	(4,2,"GtkWidget","hexpand-set","True",None,None,None,None,None,None,None,None,None),
 	(4,2,"GtkWidget","vexpand","True",None,None,None,None,None,None,None,None,None),
 	(4,2,"GtkWidget","vexpand-set","True",None,None,None,None,None,None,None,None,None),
-	(4,3,"GtkSearchBar","search-mode-enabled","True",None,None,None,None,None,None,None,None,None),
 	(4,3,"GtkSearchBar","show-close-button","True",None,None,None,None,None,None,None,None,None),
 	(4,4,"GtkBox","spacing","6",None,None,None,None,None,None,None,None,None),
 	(4,5,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),

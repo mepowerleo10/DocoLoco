@@ -332,3 +332,5 @@ class DocSet(GObject.Object):
 
 class DocPage(Adw.Bin):
     docset = DocSet
+
+# class Locator(Adw)

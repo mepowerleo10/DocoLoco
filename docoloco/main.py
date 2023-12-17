@@ -3,7 +3,7 @@ import gi
 
 from .window import ApplicationWindow
 
-from .registry import initialize_providers, registered_providers
+from .registry import initialize_providers, provider
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
@@ -17,7 +17,7 @@ class DocoLoco(Adw.Application):
         self.connect("activate", self.on_activate)
 
     def on_activate(self, app):
-        self.win = ApplicationWindow(app, registered_providers[0].docs)
+        self.win = ApplicationWindow(app, provider.docs)
         self.win.set_application(self)
         self.win.present()
 

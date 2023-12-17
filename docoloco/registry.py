@@ -1,7 +1,6 @@
-
 from abc import ABC
 from pathlib import Path
-from typing import List
+from typing import Dict, List
 
 from .models import DocSet
 
@@ -11,7 +10,7 @@ class DocumentationProvider(ABC):
         super().__init__()
 
         self.name: str = None
-        self.docs: List[DocSet] = list()
+        self.docs: Dict[str, DocSet] = dict()
         self.root_path: Path = None
 
     def load(self) -> None:
@@ -28,14 +27,12 @@ class DashProvider(DocumentationProvider):
         for doc_path in self.root_path.iterdir():
             try:
                 doc = DocSet(path=doc_path)
-                self.docs.append(doc)
+                self.docs[doc.name] = doc
             except Exception as e:
                 print(e)
 
 
-registered_providers = [DashProvider()]
-
+provider = DashProvider()
 
 def initialize_providers():
-    for provider in registered_providers:
-        provider.load()
+    provider.load()
