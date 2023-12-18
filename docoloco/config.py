@@ -5,3 +5,5 @@ class Config:
 
   def ui(self, name: str) -> str:
     return f"{self.ui_path}/{name}.ui" 
+  
+default_config = Config()

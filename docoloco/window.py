@@ -1,3 +1,4 @@
+from .locator import Locator
 from .config import Config
 import gi
 from typing import List, cast
@@ -7,7 +8,7 @@ gi.require_version("Adw", "1")
 gi.require_version("WebKit", "6.0")
 from gi.repository import Adw, Gtk, Gdk, Gio, GLib, GObject, WebKit
 
-from .registry import DocSet, provider
+from .registry import DocSet, get_registry
 
 config = Config()
 
@@ -20,7 +21,7 @@ class NewPage(Adw.Bin):
     def __init__(self):
         super().__init__()
 
-        docs = provider.docs
+        docs = get_registry().entries
         for doc in docs.values():
             button = Gtk.ToggleButton(
                 label=doc.title,
@@ -140,17 +141,29 @@ class DocSetCard(Adw.Bin):
 class ApplicationWindow(Adw.ApplicationWindow):
     __gtype_name__ = "ApplicationWindow"
     tab_view = cast(Adw.TabView, Gtk.Template.Child("view"))
+    locator: Locator = None
+    header_bar: Adw.HeaderBar = cast(Adw.HeaderBar, Gtk.Template.Child("header_bar"))
 
     go_back_action: Gio.SimpleAction
     go_forward_action: Gio.SimpleAction
+
+    primary_menu_btn = cast(Gtk.MenuButton, Gtk.Template.Child("primary_menu_btn"))
 
     def __init__(self, app: Adw.Application, docs: List[DocSet]):
         super().__init__(application=app, title="DocoLoco")
         self.docs = docs
         self.app = app
+        self.locator = Locator()
 
         if self.tab_view.get_n_pages() == 0:
             self.new_tab()
+
+        # TODO: Setup tab_view signals for on-close
+
+        self.header_bar.set_title_widget(self.locator)
+        self.popover_primary_menu = cast(
+            Gtk.PopoverMenu, self.primary_menu_btn.get_popover()
+        )
 
         self.setup_actions()
 
@@ -174,6 +187,11 @@ class ApplicationWindow(Adw.ApplicationWindow):
                 "shortcut": "<primary>F",
                 "closure": lambda x, y: self.selected_doc_page.page_search(),
             },
+            {
+                "name": "focus_locator",
+                "shortcut": "<primary>P",
+                "closure": self.focus_locator,
+            },
         ]
 
         for action in actions:
@@ -192,8 +210,10 @@ class ApplicationWindow(Adw.ApplicationWindow):
         self.add_action(g_action)
 
     @Gtk.Template.Callback()
-    def new_tab(self, *args):
-        doc_page = DocPage()
+    def new_tab(self, *args, **kwargs):
+        doc_page = (
+            DocPage(docset=self.locator.docset) if self.locator.docset else DocPage()
+        )
         self.add_tab(doc_page)
 
     def add_tab(self, doc_page: DocPage, position: int = None):
@@ -206,8 +226,35 @@ class ApplicationWindow(Adw.ApplicationWindow):
         page.set_live_thumbnail(True)
         self.tab_view.set_selected_page(page)
 
-    def change_docset(self, action, name: GLib.VariantType.new("s")):
-        docset = provider.docs[name.get_string()]
+    def on_doc_page_change(self, doc_page: DocPage):
+        if doc_page != self.selected_doc_page:
+            return
+
+        self.update_ui_for_page_change(doc_page)
+
+    def on_selected_page_change(self, **kwargs):
+        doc_page = self.selected_doc_page
+        self.update_ui_for_page_change(doc_page)
+
+        if doc_page:
+            self.change_docset(GLib.Variant(doc_page.docset.name))
+
+    def update_ui_for_page_change(self, doc_page: DocPage = None):
+        if doc_page:
+            self.go_back_action.set_enabled(doc_page.can_go_back())
+            self.go_forward_action.set_enabled(doc_page.can_go_forward())
+        else:
+            self.go_back_action.set_enabled(False)
+            self.go_forward_action.set_enabled(False)
+
+    def focus_locator(self, *args, **kwargs):
+        self.locator.grab_focus()
+
+    def change_docset(self, action=None, name: GLib.Variant = None):
+        if not name:
+            return
+
+        docset = get_registry().get(name.get_string())
         doc_page = DocPage(docset)
 
         page = self.tab_view.get_selected_page()
@@ -215,6 +262,31 @@ class ApplicationWindow(Adw.ApplicationWindow):
         self.tab_view.close_page(page)
 
         self.add_tab(doc_page, position)
+
+    """ def change_docset(self, name: GLib.Variant = None):
+        if not name:
+            return
+
+        docset = get_registry().get(name.get_string())
+        self.locator.docset = docset
+        self.selected_doc_page(docset) """
+
+    def open_page(self, variant: GLib.Variant = None):
+        if variant:
+            self.open_page_uri(variant.get_string())
+
+    def open_page_uri(self, uri: str):
+        if not self.tab_view.get_n_pages():
+            doc_page = DocPage(self.locator.docset, uri)
+            self.add_tab(doc_page)
+        else:
+            doc_page = self.selected_doc_page
+            doc_page.load_uri(uri)
+
+    def doc_page(self, pos: int) -> DocPage:
+        adw_page = self.tab_view.get_nth_page(pos)
+
+        return adw_page.get_child()
 
     @property
     def selected_doc_page(self) -> DocPage:

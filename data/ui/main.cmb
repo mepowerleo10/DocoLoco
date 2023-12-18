@@ -5,7 +5,8 @@
 	(1,1,"main.ui","main.ui",None,None,None,None,None,None,None),
 	(2,1,None,"new_page.ui",None,None,None,None,None,None,None),
 	(3,1,None,"doc_set_card.ui",None,None,None,None,None,None,None),
-	(4,1,None,"doc_page.ui",None,None,None,None,None,None,None)
+	(4,1,None,"doc_page.ui",None,None,None,None,None,None,None),
+	(5,2,None,"locator.ui",None,None,None,None,None,None,None)
   </ui>
   <ui_library>
 	(1,"libadwaita","1.4",None),
@@ -27,14 +28,15 @@
 	(1,7,"GtkButton",None,6,None,None,None,-1,None),
 	(1,8,"GtkButton",None,6,None,None,None,-1,None),
 	(1,9,"GtkEntry","search_entry",4,None,None,None,-1,None),
-	(1,10,"GtkMenuButton",None,4,None,"end",None,-1,None),
+	(1,10,"GtkMenuButton","primary_menu_btn",4,None,"end",None,-1,None),
 	(1,14,"GtkButton",None,4,None,"end",None,-1,None),
 	(1,16,"AdwTabBar","tab_bar",3,None,None,None,-1,None),
 	(1,17,"AdwTabView","view",3,None,None,None,-1,None),
-	(1,19,"(menu)","primary_menu",None,None,None,None,-1,None),
-	(1,20,"(section)",None,19,None,None,None,-1,None),
-	(1,21,"(item)",None,20,None,None,None,-1,None),
 	(1,22,"GtkButton",None,4,None,"end",None,-1,None),
+	(1,23,"(menu)","primary_menu",None,None,None,None,None,None),
+	(1,24,"(section)",None,23,None,None,None,None,None),
+	(1,25,"(item)",None,24,None,None,None,None,None),
+	(1,26,"(external)","17",None,None,None,None,None,None),
 	(2,1,"AdwBin","NewPage",None,None,None,None,-1,None),
 	(2,2,"AdwClamp",None,1,None,None,None,-1,None),
 	(2,3,"AdwClamp",None,2,None,None,None,-1,None),
@@ -55,7 +57,14 @@
 	(4,6,"GtkButton","prev_btn",4,None,None,None,1,None),
 	(4,7,"GtkButton","next_btn",4,None,None,None,2,None),
 	(4,8,"GtkLabel","search_count_label",4,None,None,None,3,None),
-	(4,9,"WebKitWebView","web_view",2,None,None,None,-1,None)
+	(4,9,"WebKitWebView","web_view",2,None,None,None,-1,None),
+	(5,1,"GtkPopover","popover",None,None,None,None,-1,None),
+	(5,2,"AdwBin","Locator",None,None,None,None,-1,None),
+	(5,3,"GtkBox",None,2,None,None,None,-1,None),
+	(5,4,"GtkMenuButton","docset_btn",3,None,None,None,-1,None),
+	(5,5,"GtkEntry","locator_entry",3,None,None,None,-1,None),
+	(5,6,"GtkScrolledWindow","results_scrolled_win",1,None,None,None,-1,None),
+	(5,7,"GtkListView","results_view",6,None,None,None,-1,None)
   </object>
   <object_property>
 	(1,1,"AdwApplicationWindow","content",None,None,None,None,None,2,None,None,None,None),
@@ -81,9 +90,9 @@
 	(1,14,"GtkButton","icon-name","view-grid-symbolic",None,None,None,None,None,None,None,None,None),
 	(1,14,"GtkWidget","tooltip-text","View Open Tabs",None,None,None,None,None,None,None,None,None),
 	(1,17,"GtkWidget","vexpand","True",None,None,None,None,None,None,None,None,None),
-	(1,21,"(item)","action","app.about",None,None,None,None,None,None,None,None,None),
-	(1,21,"(item)","label","About",None,None,None,None,None,None,None,None,None),
 	(1,22,"GtkButton","icon-name","tab-new-symbolic",None,None,None,None,None,None,None,None,None),
+	(1,25,"(item)","action","app.about",None,None,None,None,None,None,None,None,None),
+	(1,25,"(item)","label","About",None,None,None,None,None,None,None,None,None),
 	(2,4,"GtkBox","spacing","20",None,None,None,None,None,None,None,None,None),
 	(2,4,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
 	(2,4,"GtkWidget","margin-top","20",None,None,None,None,None,None,None,None,None),
@@ -110,7 +119,21 @@
 	(4,9,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
 	(4,9,"GtkWidget","hexpand-set","True",None,None,None,None,None,None,None,None,None),
 	(4,9,"GtkWidget","vexpand","True",None,None,None,None,None,None,None,None,None),
-	(4,9,"GtkWidget","vexpand-set","True",None,None,None,None,None,None,None,None,None)
+	(4,9,"GtkWidget","vexpand-set","True",None,None,None,None,None,None,None,None,None),
+	(5,1,"GtkPopover","autohide","False",None,None,None,None,None,None,None,None,None),
+	(5,1,"GtkPopover","default-widget","7",None,None,None,None,None,None,None,None,None),
+	(5,1,"GtkPopover","has-arrow","False",None,None,None,None,None,None,None,None,None),
+	(5,2,"GtkWidget","halign","center",None,None,None,None,None,None,None,None,None),
+	(5,2,"GtkWidget","name","locator",None,None,None,None,None,None,None,None,None),
+	(5,4,"GtkWidget","valign","center",None,None,None,None,None,None,None,None,None),
+	(5,5,"GtkEntry","placeholder-text","Press Ctrl+P to search a documentation",None,None,None,None,None,None,None,None,None),
+	(5,5,"GtkWidget","focusable","True",None,None,None,None,None,None,None,None,None),
+	(5,5,"GtkWidget","valign","center",None,None,None,None,None,None,None,None,None),
+	(5,5,"GtkWidget","width-request","450",None,None,None,None,None,None,None,None,None),
+	(5,6,"GtkWidget","focusable","True",None,None,None,None,None,None,None,None,None),
+	(5,6,"GtkWidget","height-request","300",None,None,None,None,None,None,None,None,None),
+	(5,6,"GtkWidget","width-request","450",None,None,None,None,None,None,None,None,None),
+	(5,7,"GtkListView","single-click-activate","True",None,None,None,None,None,None,None,None,None)
   </object_property>
   <object_signal>
 	(4,4,5,"GtkSearchEntry","search-changed","search_started",None,None,None,None,None),

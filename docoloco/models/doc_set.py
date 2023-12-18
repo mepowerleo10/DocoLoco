@@ -1,11 +1,10 @@
 from collections import namedtuple
-from dataclasses import dataclass
 from enum import Enum
 import json
 from pathlib import Path
 import plistlib
 import sqlite3
-from typing import Dict, List, Optional, cast
+from typing import Dict, List
 
 import gi
 
@@ -14,19 +13,46 @@ gi.require_version("Adw", "1")
 from gi.repository import Adw, Gtk, Gdk, Gio, GLib, GObject
 
 
-@dataclass
-class DocumentationSearchIndex:
-    name: str
-    type: str
-    path: str
-    id: int = 0
-    fragment: Optional[str] = None
-
-
 def namedtuple_factory(cursor: sqlite3.Cursor, row):
     fields = [column[0] for column in cursor.description]
     cls = namedtuple("Row", fields)
     return cls._make(row)
+
+
+class Doc(GObject.Object):
+    def __init__(self, name: str, type: str, path: str):
+        super().__init__()
+
+        self.name = name
+        self.type = type
+        self.path = path
+
+    @property
+    def icon_name(value: str) -> str:
+        icons = {
+            "Attribute": "lang-define-symbolic",
+            "Binding": "lang-define-symbolic",
+            "Category": "lang-include-symbolic",
+            "Class": "lang-class-symbolic",
+            "Constant": "lang-union-symbolic",
+            "Constructor": "lang-method-symbolic",
+            "Enumeration": "lang-enum-symbolic",
+            "Event": "lang-include-symbolic",
+            "Field": "lang-variable-symbolic",
+            "Function": "lang-function-symbolic",
+            "Guide": "open-book-symbolic",
+            "Namespace": "lang-namespace-symbolic",
+            "Macro": "lang-define-symbolic",
+            "Method": "lang-method-symbolic",
+            "Operator": "lang-typedef-symbolic",
+            "Property": "lang-variable-symbolic",
+            "Protocol": "lang-typedef-symbolic",
+            "Structure": "lang-struct-symbolic",
+            "Type": "lang-typedef-symbolic",
+            "Variable": "lang-variable-symbolic",
+        }
+
+        return icons.get(value, "lang-include-symbolic")
 
 
 class InfoPlist:
@@ -199,6 +225,17 @@ class DocSet(GObject.Object):
                 + row.count
             )
 
+    def search(self, value: str) -> List[Doc]:
+        query = f"SELECT name as name, type as type, path as path FROM searchIndex WHERE name LIKE %{value}%"
+        rows: sqlite3.Cursor = self.con.cursor().execute(query)
+
+        results: List[Doc] = []
+        for row in rows.fetchall():
+            symbol_type = self.parse_symbol_type(row.type)
+            doc = Doc(name=row.name, type=symbol_type, path=row.path)
+
+        return results
+
     def parse_symbol_type(self, value: str):
         aliases = {
             # Attribute
@@ -330,7 +367,28 @@ class DocSet(GObject.Object):
 
         return aliases.get(value, value)
 
-class DocPage(Adw.Bin):
-    docset = DocSet
+    def icon_name(value: str) -> str:
+        icons = {
+            "Attribute": "lang-define-symbolic",
+            "Binding": "lang-define-symbolic",
+            "Category": "lang-include-symbolic",
+            "Class": "lang-class-symbolic",
+            "Constant": "lang-union-symbolic",
+            "Constructor": "lang-method-symbolic",
+            "Enumeration": "lang-enum-symbolic",
+            "Event": "lang-include-symbolic",
+            "Field": "lang-variable-symbolic",
+            "Function": "lang-function-symbolic",
+            "Guide": "open-book-symbolic",
+            "Namespace": "lang-namespace-symbolic",
+            "Macro": "lang-define-symbolic",
+            "Method": "lang-method-symbolic",
+            "Operator": "lang-typedef-symbolic",
+            "Property": "lang-variable-symbolic",
+            "Protocol": "lang-typedef-symbolic",
+            "Structure": "lang-struct-symbolic",
+            "Type": "lang-typedef-symbolic",
+            "Variable": "lang-variable-symbolic",
+        }
 
-# class Locator(Adw)
+        icons.get(value, "lang-include-symbolic")
