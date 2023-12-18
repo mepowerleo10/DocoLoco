@@ -20,7 +20,9 @@ class Locator(Adw.Bin):
     docset: DocSet = None
     search_result_model: SearchResultModel = None
     search_selection_model: Gtk.SingleSelection = None
-    docset_btn: Gtk.MenuButton = Gtk.Template.Child()
+    docset_btn: Adw.SplitButton = Gtk.Template.Child()
+    docset_label: Gtk.Label = Gtk.Template.Child()
+    docset_icon: Gtk.Image = Gtk.Template.Child()
 
     def __init__(self):
         super().__init__()
@@ -51,3 +53,13 @@ class Locator(Adw.Bin):
     def entry_activated(self, pos: int = None, doc: DocSet = None):
         pos = pos if pos else self.search_selection_model.selected()
         doc = self.search_result_model.get_item(pos)
+
+    def set_docset(self, docset: DocSet):
+        self.docset = docset
+
+        if docset:
+            self.docset_label.set_label(docset.title)
+            self.docset_icon.set_from_gicon(docset.icon)
+        else:
+            self.docset_label.set_label("")
+            self.docset_icon.set_from_icon_name("open-book-symbolic")

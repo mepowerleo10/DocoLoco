@@ -26,8 +26,19 @@
     <child>
       <object class="GtkBox">
         <child>
-          <object class="GtkMenuButton" id="docset_btn">
-            <property name="valign">center</property>
+          <object class="AdwSplitButton" id="docset_btn">
+            <child>
+              <object class="GtkBox">
+                <child>
+                  <object class="GtkImage" id="docset_icon">
+                    <property name="margin-end">8</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="docset_label"/>
+                </child>
+              </object>
+            </child>
           </object>
         </child>
         <child>

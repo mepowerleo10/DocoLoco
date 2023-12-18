@@ -255,6 +255,7 @@ class ApplicationWindow(Adw.ApplicationWindow):
             return
 
         docset = get_registry().get(name.get_string())
+        self.locator.set_docset(docset)
         doc_page = DocPage(docset)
 
         page = self.tab_view.get_selected_page()

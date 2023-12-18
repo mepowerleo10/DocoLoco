@@ -6,6 +6,8 @@ import plistlib
 import sqlite3
 from typing import Dict, List
 
+from more_itertools import first
+
 import gi
 
 gi.require_version("Gtk", "4.0")
@@ -367,28 +369,8 @@ class DocSet(GObject.Object):
 
         return aliases.get(value, value)
 
-    def icon_name(value: str) -> str:
-        icons = {
-            "Attribute": "lang-define-symbolic",
-            "Binding": "lang-define-symbolic",
-            "Category": "lang-include-symbolic",
-            "Class": "lang-class-symbolic",
-            "Constant": "lang-union-symbolic",
-            "Constructor": "lang-method-symbolic",
-            "Enumeration": "lang-enum-symbolic",
-            "Event": "lang-include-symbolic",
-            "Field": "lang-variable-symbolic",
-            "Function": "lang-function-symbolic",
-            "Guide": "open-book-symbolic",
-            "Namespace": "lang-namespace-symbolic",
-            "Macro": "lang-define-symbolic",
-            "Method": "lang-method-symbolic",
-            "Operator": "lang-typedef-symbolic",
-            "Property": "lang-variable-symbolic",
-            "Protocol": "lang-typedef-symbolic",
-            "Structure": "lang-struct-symbolic",
-            "Type": "lang-typedef-symbolic",
-            "Variable": "lang-variable-symbolic",
-        }
-
-        icons.get(value, "lang-include-symbolic")
+    @property
+    def icon(self):
+        icon_path: Path = first(self.icon_files)
+        icon = Gio.FileIcon.new_for_string(icon_path.as_posix())
+        return icon
