@@ -65,10 +65,3 @@ registry = Registry()
 
 def get_registry():
     return registry
-
-
-provider = DashProvider()
-
-
-def initialize_providers():
-    provider.load()

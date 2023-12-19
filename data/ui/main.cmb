@@ -136,7 +136,9 @@
 	(5,6,"GtkWidget","height-request","300",None,None,None,None,None,None,None,None,None),
 	(5,6,"GtkWidget","width-request","450",None,None,None,None,None,None,None,None,None),
 	(5,7,"GtkListView","single-click-activate","True",None,None,None,None,None,None,None,None,None),
-	(5,10,"GtkWidget","margin-end","8",None,None,None,None,None,None,None,None,None)
+	(5,10,"GtkImage","icon-name","accessories-dictionary-symbolic",None,None,None,None,None,None,None,None,None),
+	(5,10,"GtkWidget","margin-end","8",None,None,None,None,None,None,None,None,None),
+	(5,11,"GtkLabel","label","DocSet",None,None,None,None,None,None,None,None,None)
   </object_property>
   <object_signal>
 	(4,4,5,"GtkSearchEntry","search-changed","search_started",None,None,None,None,None),

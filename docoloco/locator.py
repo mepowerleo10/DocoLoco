@@ -61,5 +61,5 @@ class Locator(Adw.Bin):
             self.docset_label.set_label(docset.title)
             self.docset_icon.set_from_gicon(docset.icon)
         else:
-            self.docset_label.set_label("")
-            self.docset_icon.set_from_icon_name("open-book-symbolic")
+            self.docset_label.set_label("DocSet")
+            self.docset_icon.set_from_icon_name("accessories-dictionary-symbolic")

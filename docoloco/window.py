@@ -41,11 +41,12 @@ class DocPage(Adw.Bin):
     search_entry = cast(Gtk.SearchEntry, Gtk.Template.Child("entry"))
     search_ready = False
 
-    title = "Choose a DocSet"
 
     def __init__(self, docset: DocSet = None, uri: str = None):
         super().__init__(hexpand=True, vexpand=True)
         self.docset = docset
+        
+        self.title = "Choose a DocSet"
 
         if uri:
             self.load_uri(uri)
@@ -60,7 +61,7 @@ class DocPage(Adw.Bin):
     def load_uri(self, uri: str):
         self.setup_search_signals()
         self.web_view.load_uri(uri)
-        # web_view.bind_property("title", self, "title", GObject.BindingFlags.DEFAULT)
+        # self.web_view.bind_property("title", self, "title", GObject.BindingFlags.DEFAULT)
         self.web_view.connect("load-changed", self.on_load_changed)
 
     def setup_search_signals(self):
@@ -149,12 +150,12 @@ class ApplicationWindow(Adw.ApplicationWindow):
 
     primary_menu_btn = cast(Gtk.MenuButton, Gtk.Template.Child("primary_menu_btn"))
 
-    def __init__(self, app: Adw.Application, docs: List[DocSet]):
+    def __init__(self, app: Adw.Application):
         super().__init__(application=app, title="DocoLoco")
-        self.docs = docs
         self.app = app
         self.locator = Locator()
 
+        self.tab_view.connect("notify::title", self.on_tab_change)
         if self.tab_view.get_n_pages() == 0:
             self.new_tab()
 
@@ -211,10 +212,13 @@ class ApplicationWindow(Adw.ApplicationWindow):
 
     @Gtk.Template.Callback()
     def new_tab(self, *args, **kwargs):
-        doc_page = (
-            DocPage(docset=self.locator.docset) if self.locator.docset else DocPage()
-        )
+        docset = None
+        if "docset" in kwargs.keys():
+            docset = kwargs.pop("docset")
+
+        doc_page = DocPage(docset=docset) if docset else DocPage()
         self.add_tab(doc_page)
+        self.locator.set_docset(docset)
 
     def add_tab(self, doc_page: DocPage, position: int = None):
         if position:
@@ -222,9 +226,13 @@ class ApplicationWindow(Adw.ApplicationWindow):
         else:
             page = self.tab_view.append(doc_page)
 
+        # doc_page.bind_property("title", page, "title", GObject.BindingFlags.DEFAULT)
         page.set_title(doc_page.title)
         page.set_live_thumbnail(True)
         self.tab_view.set_selected_page(page)
+
+    def on_tab_change(self, *args):
+        pass
 
     def on_doc_page_change(self, doc_page: DocPage):
         if doc_page != self.selected_doc_page:
@@ -241,9 +249,11 @@ class ApplicationWindow(Adw.ApplicationWindow):
 
     def update_ui_for_page_change(self, doc_page: DocPage = None):
         if doc_page:
+            self.locator.set_docset(doc_page.docset)
             self.go_back_action.set_enabled(doc_page.can_go_back())
             self.go_forward_action.set_enabled(doc_page.can_go_forward())
         else:
+            self.locator.set_docset(None)
             self.go_back_action.set_enabled(False)
             self.go_forward_action.set_enabled(False)
 

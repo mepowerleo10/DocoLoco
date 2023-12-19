@@ -31,11 +31,14 @@
               <object class="GtkBox">
                 <child>
                   <object class="GtkImage" id="docset_icon">
+                    <property name="icon-name">accessories-dictionary-symbolic</property>
                     <property name="margin-end">8</property>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="docset_label"/>
+                  <object class="GtkLabel" id="docset_label">
+                    <property name="label">DocSet</property>
+                  </object>
                 </child>
               </object>
             </child>
