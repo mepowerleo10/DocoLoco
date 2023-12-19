@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=DocoLoco
+Comment=Development Documentaion Browser
+Path=/home/mepowerleo10/Dables/GTK4 Development/DocoLoco
+Exec=python -m docoloco
+Terminal=false

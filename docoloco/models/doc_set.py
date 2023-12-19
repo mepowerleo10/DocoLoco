@@ -5,9 +5,6 @@ from pathlib import Path
 import plistlib
 import sqlite3
 from typing import Dict, List
-
-from more_itertools import first
-
 import gi
 
 gi.require_version("Gtk", "4.0")
@@ -30,7 +27,7 @@ class Doc(GObject.Object):
         self.path = path
 
     @property
-    def icon_name(value: str) -> str:
+    def icon_name(self) -> str:
         icons = {
             "Attribute": "lang-define-symbolic",
             "Binding": "lang-define-symbolic",
@@ -54,7 +51,7 @@ class Doc(GObject.Object):
             "Variable": "lang-variable-symbolic",
         }
 
-        return icons.get(value, "lang-include-symbolic")
+        return icons.get(self.type, "lang-include-symbolic")
 
 
 class InfoPlist:
@@ -228,13 +225,14 @@ class DocSet(GObject.Object):
             )
 
     def search(self, value: str) -> List[Doc]:
-        query = f"SELECT name as name, type as type, path as path FROM searchIndex WHERE name LIKE %{value}%"
+        query = f"SELECT name as name, type as type, path as path FROM searchIndex WHERE name LIKE '%{value}%' LIMIT 20"
         rows: sqlite3.Cursor = self.con.cursor().execute(query)
 
         results: List[Doc] = []
         for row in rows.fetchall():
             symbol_type = self.parse_symbol_type(row.type)
             doc = Doc(name=row.name, type=symbol_type, path=row.path)
+            results.append(doc)
 
         return results
 
@@ -371,6 +369,6 @@ class DocSet(GObject.Object):
 
     @property
     def icon(self):
-        icon_path: Path = first(self.icon_files)
+        icon_path: Path = next(self.icon_files)
         icon = Gio.FileIcon.new_for_string(icon_path.as_posix())
         return icon

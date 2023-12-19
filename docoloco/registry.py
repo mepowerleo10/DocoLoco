@@ -2,8 +2,6 @@ from abc import ABC
 from pathlib import Path
 from typing import Dict, List
 
-from tomlkit import value
-
 from .models import DocSet, Doc
 
 
