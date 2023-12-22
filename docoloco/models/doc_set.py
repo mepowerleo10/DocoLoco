@@ -230,11 +230,32 @@ class DocSet(GObject.Object):
 
         results: List[Doc] = []
         for row in rows.fetchall():
-            symbol_type = self.parse_symbol_type(row.type)
-            doc = Doc(name=row.name, type=symbol_type, path=self.get_uri_to(row.path))
+            doc = self.build_doc_from_row(row)
             results.append(doc)
 
         return results
+
+    def build_doc_from_row(self, row):
+        symbol_type = self.parse_symbol_type(row.type)
+        doc = Doc(name=row.name, type=symbol_type, path=self.get_uri_to(row.path))
+        return doc
+    
+    @property
+    def sections(self) -> Dict[str, List[Doc]]:
+        results = {}
+
+        for key, items in self.symbol_strings.items():
+            like_conditions = [f"type LIKE '%{value}%'" for value in items]
+            query = f"SELECT name as name, type as type, path as path FROM searchIndex WHERE {"OR ".join(like_conditions)} LIMIT 20"
+            rows = self.con.cursor().execute(query)
+
+            results[key] = list()
+            for row in rows.fetchall():
+                doc = self.build_doc_from_row(row)
+                results[key].append(doc)
+
+        return results
+
 
     def parse_symbol_type(self, value: str):
         aliases = {

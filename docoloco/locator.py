@@ -1,6 +1,6 @@
 from typing import cast
 
-from .models import DocSet, SearchResultModel, Doc
+from .models import DocSet, Doc
 from .config import default_config
 from .registry import get_registry
 import gi
@@ -44,7 +44,7 @@ class Locator(Adw.Bin):
         self.search_selection_model.autoselect = False
         self.results_view.set_model(self.search_selection_model)
         self.results_view.set_factory(view_factory)
-        # self.results_view.connect("activate", lambda i: self.entry_activated(pos=i))
+        self.results_view.connect("activate", lambda _, i: self.entry_activated(pos=i))
         self.popover.set_parent(self.search_box)
 
         menu = Gio.Menu()
@@ -94,7 +94,7 @@ class Locator(Adw.Bin):
 
         variant = GLib.Variant.new_string(doc.path)
         self.activate_action(f"win.open_page", variant)
-        self.popover.set_visible(False)
+        self.toggle_focus()
 
     def set_docset(self, docset: DocSet):
         self.docset = docset
@@ -105,3 +105,10 @@ class Locator(Adw.Bin):
         else:
             self.docset_label.set_label("DocSet")
             self.docset_icon.set_from_icon_name("accessories-dictionary-symbolic")
+
+    def toggle_focus(self, *args):
+        if self.popover.get_visible():
+            self.popover.set_visible(False)
+        else:
+            self.popover.set_visible(True)
+            self.entry.grab_focus()

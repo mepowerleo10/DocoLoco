@@ -69,6 +69,13 @@
             </child>
           </object>
         </property>
+        <property name="sidebar">
+          <object class="GtkBox" id="sidebar">
+            <property name="orientation">vertical</property>
+            <property name="vexpand">True</property>
+            <property name="vexpand-set">True</property>
+          </object>
+        </property>
       </object>
     </child>
   </template>
