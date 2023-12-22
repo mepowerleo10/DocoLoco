@@ -23,12 +23,13 @@ class Locator(Adw.Bin):
     docset_btn: Adw.SplitButton = Gtk.Template.Child()
     docset_label: Gtk.Label = Gtk.Template.Child()
     docset_icon: Gtk.Image = Gtk.Template.Child()
+    search_box = cast(Gtk.Box, Gtk.Template.Child())
 
     def __init__(self):
         super().__init__()
 
         # self.docset = DocSet()
-        self.search_result_model = Gio.ListStore()
+        self.search_result_model = Gio.ListStore(item_type=Doc)
 
         self.entry.connect("activate", lambda _: self.entry_activated())
         self.entry.connect("changed", lambda _: self.search_changed())
@@ -37,12 +38,14 @@ class Locator(Adw.Bin):
         view_factory.connect("setup", self.setup_locator_entry)
         view_factory.connect("bind", self.bind_locator_entry)
 
-        self.search_selection_model = Gtk.SingleSelection(model=self.search_result_model)
+        self.search_selection_model = Gtk.SingleSelection(
+            model=self.search_result_model
+        )
         self.search_selection_model.autoselect = False
         self.results_view.set_model(self.search_selection_model)
         self.results_view.set_factory(view_factory)
         # self.results_view.connect("activate", lambda i: self.entry_activated(pos=i))
-        self.popover.set_parent(self)
+        self.popover.set_parent(self.search_box)
 
         menu = Gio.Menu()
         for name, docset in get_registry().entries.items():
@@ -82,12 +85,16 @@ class Locator(Adw.Bin):
             self.search_result_model.append(result)
 
         # self.search_result_model.data = results
-        # self.search_selection_model.set_selected(False)
+        self.search_selection_model.set_selected(False)
         self.popover.set_visible(True)
 
-    def entry_activated(self, pos: int = None, doc: DocSet = None):
-        pos = pos if pos else self.search_selection_model.selected()
+    def entry_activated(self, pos: int = None, doc: Doc = None):
+        pos = pos if pos else self.search_selection_model.get_selected()
         doc = self.search_result_model.get_item(pos)
+
+        variant = GLib.Variant.new_string(doc.path)
+        self.activate_action(f"win.open_page", variant)
+        self.popover.set_visible(False)
 
     def set_docset(self, docset: DocSet):
         self.docset = docset

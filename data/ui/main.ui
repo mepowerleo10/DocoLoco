@@ -2,9 +2,9 @@
 <!-- Created with Cambalache 0.16.0 -->
 <interface>
   <!-- interface-name main.ui -->
-  <requires lib="libadwaita" version="1.4"/>
   <requires lib="gio" version="2.0"/>
   <requires lib="gtk" version="4.12"/>
+  <requires lib="libadwaita" version="1.4"/>
   <template class="ApplicationWindow" parent="AdwApplicationWindow">
     <property name="content">
       <object class="AdwTabOverview" id="tab_overview">
@@ -76,7 +76,7 @@
         <signal name="create-tab" handler="new_tab"/>
       </object>
     </property>
-    <property name="height-request">450</property>
+    <property name="height-request">700</property>
     <property name="vexpand">True</property>
     <property name="vexpand-set">True</property>
   </template>

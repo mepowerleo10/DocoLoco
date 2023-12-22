@@ -1,3 +1,5 @@
+import re
+from urllib.parse import unquote
 from .locator import Locator
 from .config import Config
 import gi
@@ -23,11 +25,21 @@ class NewPage(Adw.Bin):
 
         docs = get_registry().entries
         for doc in docs.values():
-            button = Gtk.ToggleButton(
-                label=doc.title,
+            box = Gtk.Box(spacing=6)
+
+            icon = Gtk.Image()
+            icon.set_from_gicon(doc.icon)
+            box.append(icon)
+
+            label = Gtk.Label(label=doc.title)
+            box.append(label)
+
+            button = Gtk.Button(
+                # label=doc.title,
                 action_name="win.change_docset",
                 action_target=GLib.Variant.new_string(doc.name),
             )
+            button.set_child(box)
             self.box.append(button)
 
 
@@ -40,13 +52,20 @@ class DocPage(Adw.Bin):
     search_count_label = cast(Gtk.Label, Gtk.Template.Child("search_count_label"))
     search_entry = cast(Gtk.SearchEntry, Gtk.Template.Child("entry"))
     search_ready = False
-
+    base_uri: str = None
+    anchor: str = None
 
     def __init__(self, docset: DocSet = None, uri: str = None):
         super().__init__(hexpand=True, vexpand=True)
         self.docset = docset
-        
+
         self.title = "Choose a DocSet"
+
+        # context = WebKit.WebContext#.new_with_website_data_manager(WebKit.WebsiteDataManager())
+        # self.web_view = WebKit.WebView()
+
+        self.web_view.connect("load-failed", self.on_load_failed)
+        self.web_view.connect("load-changed", self.on_load)
 
         if uri:
             self.load_uri(uri)
@@ -60,9 +79,34 @@ class DocPage(Adw.Bin):
 
     def load_uri(self, uri: str):
         self.setup_search_signals()
+        uri = unquote(uri)
+        uri = self.clean_uri(uri)
+        # uri_components = uri.split("#")
+        # if len(uri_components) == 1:
+        #     self.base_uri, self.anchor = (uri_components[0], None)
+        # else:
+        #     self.base_uri, self.anchor = uri_components
+
         self.web_view.load_uri(uri)
         # self.web_view.bind_property("title", self, "title", GObject.BindingFlags.DEFAULT)
         self.web_view.connect("load-changed", self.on_load_changed)
+
+    def clean_uri(self, uri: str):
+        # Define a regular expression pattern to find metadata tags
+        metadata_pattern = re.compile(r"<dash_entry_[^>]+>")
+
+        # Remove metadata tags from the input uri
+        cleaned_uri = re.sub(metadata_pattern, "", uri)
+        return cleaned_uri
+
+    def on_load(self, web_view, event):
+        if self.anchor and event == WebKit.LoadEvent.FINISHED:
+            self.web_view.evaluate_javascript(
+                f"location.hash = '{self.anchor}'", -1, None, None, None, None, None
+            )
+
+    def on_load_failed(self, web_view, load_event, failing_uri: str, error):
+        print(error)
 
     def setup_search_signals(self):
         self.search_bar.connect_entry(self.search_entry)
@@ -109,9 +153,10 @@ class DocPage(Adw.Bin):
         return self.web_view.can_go_back()
 
     def go_back(self, *args):
-        history = self.web_view.get_back_forward_list()
-        if history.get_back_item():
-            history.go_back()
+        # history = self.web_view.get_back_forward_list()
+        # if history.get_back_item():
+        #     history.go_back()
+        self.web_view.go_back()
 
     def can_go_forward(self) -> bool:
         return self.web_view.can_go_forward()
@@ -205,6 +250,12 @@ class ApplicationWindow(Adw.ApplicationWindow):
                 self.app.set_accels_for_action(f"win.{action['name']}", [shortcut])
 
         g_action = Gio.SimpleAction(
+            name="open_page", parameter_type=GLib.VariantType("s")
+        )
+        g_action.connect("activate", self.open_page)
+        self.add_action(g_action)
+
+        g_action = Gio.SimpleAction(
             name="change_docset", parameter_type=GLib.VariantType.new("s")
         )
         g_action.connect("activate", self.change_docset)
@@ -282,7 +333,7 @@ class ApplicationWindow(Adw.ApplicationWindow):
         self.locator.docset = docset
         self.selected_doc_page(docset) """
 
-    def open_page(self, variant: GLib.Variant = None):
+    def open_page(self, action=None, variant: GLib.Variant = None):
         if variant:
             self.open_page_uri(variant.get_string())
 

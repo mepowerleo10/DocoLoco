@@ -39,7 +39,7 @@ class Doc(GObject.Object):
             "Event": "lang-include-symbolic",
             "Field": "lang-variable-symbolic",
             "Function": "lang-function-symbolic",
-            "Guide": "open-book-symbolic",
+            "Guide": "accessories-text-editor-symbolic",
             "Namespace": "lang-namespace-symbolic",
             "Macro": "lang-define-symbolic",
             "Method": "lang-method-symbolic",
@@ -91,7 +91,7 @@ class DocSet(GObject.Object):
         self.meta: Dict = None
         self.load_metadata()
 
-        self.icon_files: list = self.dir.glob("icon*.*")
+        self.icon_files: list = [icon for icon in self.dir.glob("icon*.*")]
 
         self.plist: Dict = None
         self.load_plist_info()
@@ -231,7 +231,7 @@ class DocSet(GObject.Object):
         results: List[Doc] = []
         for row in rows.fetchall():
             symbol_type = self.parse_symbol_type(row.type)
-            doc = Doc(name=row.name, type=symbol_type, path=row.path)
+            doc = Doc(name=row.name, type=symbol_type, path=self.get_uri_to(row.path))
             results.append(doc)
 
         return results
@@ -369,6 +369,10 @@ class DocSet(GObject.Object):
 
     @property
     def icon(self):
-        icon_path: Path = next(self.icon_files)
+        icon_path: Path = self.icon_files[0]
         icon = Gio.FileIcon.new_for_string(icon_path.as_posix())
         return icon
+
+    def get_uri_to(self, path: str) -> str:
+        full_path = (self.documents_dir / path)
+        return full_path.as_uri()
