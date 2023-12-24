@@ -9,7 +9,6 @@ readme = "README.md"
 python = "^3.12"
 pygobject = "^3.46.0"
 pygobject-stubs = "^2.10.0"
-lxml = "^4.9.4"
 
 
 [build-system]

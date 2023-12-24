@@ -1,9 +1,8 @@
 import html
 import re
-from urllib.parse import quote, unquote
-from lxml import etree
+from urllib.parse import unquote
 
-from ..models.doc_set import Doc
+from ..models import Doc, Section, DocSet
 
 from .new_page import NewPage
 from ..config import default_config
@@ -14,8 +13,6 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 gi.require_version("WebKit", "6.0")
 from gi.repository import Adw, Gtk, Gdk, Gio, GLib, GObject, WebKit, Pango
-
-from ..registry import DocSet
 
 
 @Gtk.Template(filename=default_config.ui("doc_page"))
@@ -43,7 +40,7 @@ class DocPage(Adw.Bin):
         self.web_view.connect("load-failed", self.on_load_failed)
         self.web_view.connect("load-changed", self.on_load)
 
-        self.update_sections()
+        self._update_sections()
 
         if uri:
             self.load_uri(uri)
@@ -93,6 +90,89 @@ class DocPage(Adw.Bin):
         scrolled_window.set_vexpand(True)
         self.sidebar.append(scrolled_window)
 
+    def _update_sections(self):
+        if not self.docset:
+            return
+
+        sections_list_store = Gio.ListStore(item_type=Section)
+        for title, count in self.docset.symbol_counts.items():
+            section = Section(title, count)
+            sections_list_store.append(section)
+
+        view_factory = Gtk.SignalListItemFactory()
+        view_factory.connect("setup", self._setup_sections)
+        view_factory.connect("bind", self._bind_sections)
+
+        tree_list_model = Gtk.TreeListModel.new(
+            sections_list_store, True, True, self._create_section_subdocuments
+        )
+        list_selection_model = Gtk.SingleSelection(model=tree_list_model)
+
+        sections_tree = Gtk.ListView()
+        sections_tree.set_model(list_selection_model)
+        sections_tree.set_factory(view_factory)
+        sections_tree.connect("activate", self._on_subdocument_clicked)
+
+        scrolled_window = Gtk.ScrolledWindow()
+        # scrolled_window.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scrolled_window.set_child(sections_tree)
+        scrolled_window.set_vexpand(True)
+        self.sidebar.append(scrolled_window)
+
+    def _setup_sections(self, factory, obj: GObject.Object):
+        list_item = cast(Gtk.ListItem, obj)
+        expander = Gtk.TreeExpander()
+        box = Gtk.Box(spacing=4)
+        icon = Gtk.Image()
+        label = Gtk.Label()
+
+        box.append(icon)
+        box.append(label)
+        expander.set_child(box)
+        list_item.set_child(expander)
+
+    def _bind_sections(self, factory, obj: GObject.Object):
+        list_item = cast(Gtk.ListItem, obj)
+        expander = cast(Gtk.TreeExpander, list_item.get_child())
+        box = cast(Gtk.Box, expander.get_child())
+
+        icon = cast(Gtk.Image(), box.get_first_child())
+        label = cast(Gtk.Label(), box.get_last_child())
+
+        item = list_item.get_item()
+        if isinstance(item, Section):
+            section = cast(Section, item)
+            icon.set_from_icon_name(section.icon_name)
+            label.set_label(section.title)
+        elif isinstance(item, Doc):
+            doc = cast(Doc, item)
+
+            label.set_markup(
+                        f"<a href='{html.escape(doc.path)}'>{html.escape(doc.name)}</a>"
+                    )
+            label.set_cursor(Gdk.Cursor.new_from_name("pointer"))
+            label.set_margin_start(10)
+            label.set_ellipsize(Pango.EllipsizeMode.END)
+            label.set_tooltip_text(doc.name)
+
+            label.connect("activate-link", self.on_item_clicked)
+            label.connect("activate-current-link", self.on_item_clicked)
+            # label.set_label(doc.name)
+
+    def _create_section_subdocuments(self, obj: GObject.Object):
+        if not isinstance(obj, Section):
+            return None
+
+        section = cast(Section, obj)
+        subdocuments_store = Gio.ListStore(item_type=Doc)
+        for doc in self.docset.sections[section.title]:
+            subdocuments_store.append(doc)
+
+        return subdocuments_store
+
+    def _on_subdocument_clicked(self, *args):
+        pass
+
     def on_item_clicked(self, label: Gtk.Label, path: str, *args):
         label.stop_emission_by_name("activate-link")
         variant = GLib.Variant.new_string(path)
@@ -103,9 +183,10 @@ class DocPage(Adw.Bin):
         uri = unquote(uri)
         uri = self.clean_uri(uri)
 
-        content = self.get_content(uri)
-        # self.web_view.load_uri(uri)
-        self.web_view.load_html(content, uri)
+        # content = self.get_content(uri)
+        # self.web_view.load_html(content, uri)
+        
+        self.web_view.load_uri(uri)
         # self.web_view.bind_property("title", self, "title", GObject.BindingFlags.DEFAULT)
         self.web_view.connect("load-changed", self.on_load_changed)
 
@@ -126,7 +207,7 @@ class DocPage(Adw.Bin):
         cleaned_uri = re.sub(metadata_pattern, "", uri)
         return cleaned_uri
 
-    def on_load(self, web_view, event):        
+    def on_load(self, web_view, event):
         if self.anchor and event == WebKit.LoadEvent.FINISHED:
             self.web_view.evaluate_javascript(
                 f"location.hash = '{self.anchor}'", -1, None, None, None, None, None

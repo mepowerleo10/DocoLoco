@@ -17,8 +17,43 @@ def namedtuple_factory(cursor: sqlite3.Cursor, row):
     cls = namedtuple("Row", fields)
     return cls._make(row)
 
+class Sectionable:
+    icons = {
+        "Attribute": "lang-define-symbolic",
+        "Binding": "lang-define-symbolic",
+        "Category": "lang-include-symbolic",
+        "Class": "lang-class-symbolic",
+        "Constant": "lang-union-symbolic",
+        "Constructor": "lang-method-symbolic",
+        "Enumeration": "lang-enum-symbolic",
+        "Event": "lang-include-symbolic",
+        "Field": "lang-variable-symbolic",
+        "Function": "lang-function-symbolic",
+        "Guide": "accessories-text-editor-symbolic",
+        "Namespace": "lang-namespace-symbolic",
+        "Macro": "lang-define-symbolic",
+        "Method": "lang-method-symbolic",
+        "Operator": "lang-typedef-symbolic",
+        "Property": "lang-variable-symbolic",
+        "Protocol": "lang-typedef-symbolic",
+        "Structure": "lang-struct-symbolic",
+        "Type": "lang-typedef-symbolic",
+        "Variable": "lang-variable-symbolic",
+    }
 
-class Doc(GObject.Object):
+class Section(GObject.Object, Sectionable):
+    def __init__(self, title: str, count: int):
+        super().__init__()
+
+        self.title = title
+        self.count = count
+
+    @property
+    def icon_name(self) -> str:
+        return self.icons.get(self.title, "lang-include-symbolic")
+        
+
+class Doc(GObject.Object, Sectionable):
     def __init__(self, name: str, type: str, path: str):
         super().__init__()
 
@@ -28,30 +63,7 @@ class Doc(GObject.Object):
 
     @property
     def icon_name(self) -> str:
-        icons = {
-            "Attribute": "lang-define-symbolic",
-            "Binding": "lang-define-symbolic",
-            "Category": "lang-include-symbolic",
-            "Class": "lang-class-symbolic",
-            "Constant": "lang-union-symbolic",
-            "Constructor": "lang-method-symbolic",
-            "Enumeration": "lang-enum-symbolic",
-            "Event": "lang-include-symbolic",
-            "Field": "lang-variable-symbolic",
-            "Function": "lang-function-symbolic",
-            "Guide": "accessories-text-editor-symbolic",
-            "Namespace": "lang-namespace-symbolic",
-            "Macro": "lang-define-symbolic",
-            "Method": "lang-method-symbolic",
-            "Operator": "lang-typedef-symbolic",
-            "Property": "lang-variable-symbolic",
-            "Protocol": "lang-typedef-symbolic",
-            "Structure": "lang-struct-symbolic",
-            "Type": "lang-typedef-symbolic",
-            "Variable": "lang-variable-symbolic",
-        }
-
-        return icons.get(self.type, "lang-include-symbolic")
+        return self.icons.get(self.type, "lang-include-symbolic")
 
 
 class InfoPlist:
