@@ -1,4 +1,3 @@
-```markdown
 # DocoLoco
 
 DocoLoco is a documentation browser that utilizes documentation sets provided by Zeal Docs. Please note that Zeal must be installed to use DocoLoco.
@@ -118,4 +117,3 @@ If you would like to contribute to DocoLoco, please follow our [Contribution Gui
 ## License
 
 DocoLoco is licensed under the [MIT License](LICENSE).
-```
