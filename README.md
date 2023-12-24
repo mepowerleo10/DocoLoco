@@ -17,7 +17,6 @@ Here are some preview images of DocoLoco in action:
 | ------------------------------------- | --------------------------------------------------- | ----------------------------------------------- |
 | ![Homepage](screenshots/homepage.png) | ![Documatation Page](screenshots/documentation.png) | ![Tabs Overview](screenshots/tabs-overview.png) |
 
-````
 
 ## Installation
 
@@ -28,7 +27,7 @@ To get started with DocoLoco, follow these steps:
    ```bash
    git clone https://github.com/your-username/DocoLoco.git
    cd DocoLoco
-````
+   ```
 
 2. **Install Poetry:**
 
