@@ -12,6 +12,7 @@
       "justMyCode": true,
       "env": {
         "GDK_BACKEND": "wayland",
+        "G_ENABLE_DIAGNOSTIC": "1",
       }
     }
   ]

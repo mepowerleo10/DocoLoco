@@ -1,12 +1,10 @@
 from collections import namedtuple
-from dataclasses import dataclass
 from enum import Enum
 import json
 from pathlib import Path
 import plistlib
 import sqlite3
-from typing import Dict, List, Optional, cast
-
+from typing import Dict, List, cast
 import gi
 
 gi.require_version("Gtk", "4.0")
@@ -14,19 +12,58 @@ gi.require_version("Adw", "1")
 from gi.repository import Adw, Gtk, Gdk, Gio, GLib, GObject
 
 
-@dataclass
-class DocumentationSearchIndex:
-    name: str
-    type: str
-    path: str
-    id: int = 0
-    fragment: Optional[str] = None
-
-
 def namedtuple_factory(cursor: sqlite3.Cursor, row):
     fields = [column[0] for column in cursor.description]
     cls = namedtuple("Row", fields)
     return cls._make(row)
+
+class Sectionable:
+    icons = {
+        "Attribute": "lang-define-symbolic",
+        "Binding": "lang-define-symbolic",
+        "Category": "lang-include-symbolic",
+        "Class": "lang-class-symbolic",
+        "Constant": "lang-union-symbolic",
+        "Constructor": "lang-method-symbolic",
+        "Enumeration": "lang-enum-symbolic",
+        "Event": "lang-include-symbolic",
+        "Field": "lang-variable-symbolic",
+        "Function": "lang-function-symbolic",
+        "Guide": "accessories-text-editor-symbolic",
+        "Namespace": "lang-namespace-symbolic",
+        "Macro": "lang-define-symbolic",
+        "Method": "lang-method-symbolic",
+        "Operator": "lang-typedef-symbolic",
+        "Property": "lang-variable-symbolic",
+        "Protocol": "lang-typedef-symbolic",
+        "Structure": "lang-struct-symbolic",
+        "Type": "lang-typedef-symbolic",
+        "Variable": "lang-variable-symbolic",
+    }
+
+class Section(GObject.Object, Sectionable):
+    def __init__(self, title: str, count: int):
+        super().__init__()
+
+        self.title = title
+        self.count = count
+
+    @property
+    def icon_name(self) -> str:
+        return self.icons.get(self.title, "lang-include-symbolic")
+        
+
+class Doc(GObject.Object, Sectionable):
+    def __init__(self, name: str, type: str, path: str):
+        super().__init__()
+
+        self.name = name
+        self.type = type
+        self.path = path
+
+    @property
+    def icon_name(self) -> str:
+        return self.icons.get(self.type, "lang-include-symbolic")
 
 
 class InfoPlist:
@@ -66,7 +103,7 @@ class DocSet(GObject.Object):
         self.meta: Dict = None
         self.load_metadata()
 
-        self.icon_files: list = self.dir.glob("icon*.*")
+        self.icon_files: list = [icon for icon in self.dir.glob("icon*.*")]
 
         self.plist: Dict = None
         self.load_plist_info()
@@ -98,6 +135,9 @@ class DocSet(GObject.Object):
         self.symbol_strings: Dict[str, List] = {}
         self.symbol_counts = {}
         self.count_symbols()
+
+        self.sections: Dict[str, Gio.ListStore] = dict()
+        self.populate_all_sections()
 
     def load_metadata(self):
         """Reads the meta.json file"""
@@ -199,6 +239,56 @@ class DocSet(GObject.Object):
                 + row.count
             )
 
+    def search(self, value: str) -> List[Doc]:
+        query = f"SELECT name as name, type as type, path as path FROM searchIndex WHERE name LIKE '%{value}%' LIMIT 20"
+        rows: sqlite3.Cursor = self.con.cursor().execute(query)
+
+        results: List[Doc] = []
+        for row in rows.fetchall():
+            doc = self.build_doc_from_row(row)
+            results.append(doc)
+
+        return results
+
+    def build_doc_from_row(self, row):
+        symbol_type = self.parse_symbol_type(row.type)
+        doc = Doc(name=row.name, type=symbol_type, path=self.get_uri_to(row.path))
+        return doc
+    
+    def populate_all_sections(self):
+        for key in self.symbol_strings.keys():
+            self.populate_section(key)
+
+    def populate_section(self, name: str):
+            section_index = self.sections.get(name, Gio.ListStore(item_type=Doc))
+            section_size = section_index.get_n_items()
+
+            page_size = 20
+            if section_size > 0:
+                last_item: Doc = section_index.get_item(section_size - 1)
+                if last_item.type == "More":
+                    section_index.remove(section_size - 1) # remove the 'More...' link
+
+                offset = section_size - 1
+            else:
+                offset = 0
+
+
+            also_known_as_list = self.symbol_strings[name]
+            like_conditions = [f"type LIKE '%{value}%'" for value in also_known_as_list]
+            query = f"SELECT name as name, type as type, path as path FROM searchIndex WHERE {"OR ".join(like_conditions)} LIMIT {page_size} OFFSET {offset}"
+            rows = self.con.cursor().execute(query)
+
+            for row in rows.fetchall():
+                doc = self.build_doc_from_row(row)
+                section_index.append(doc)
+
+            if section_index.get_n_items() < self.symbol_counts[name]:
+                section_index.append(Doc("Load more ...", "More", "more")) # add the 'More...' link
+
+            self.sections[name] = section_index
+
+    
     def parse_symbol_type(self, value: str):
         aliases = {
             # Attribute
@@ -330,7 +420,12 @@ class DocSet(GObject.Object):
 
         return aliases.get(value, value)
 
-class DocPage(Adw.Bin):
-    docset = DocSet
+    @property
+    def icon(self):
+        icon_path: Path = self.icon_files[0]
+        icon = Gio.FileIcon.new_for_string(icon_path.as_posix())
+        return icon
 
-# class Locator(Adw)
+    def get_uri_to(self, path: str) -> str:
+        full_path = (self.documents_dir / path)
+        return full_path.as_uri()
