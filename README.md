@@ -124,6 +124,9 @@ This will create the required files for GTK4 completion in your development envi
 
 If you would like to contribute to DocoLoco, please follow our [Contribution Guidelines](CONTRIBUTING.md).
 
+## Thanks To
+[RTFM by @hugopol](https://github.com/hugopl/rtfm) for the inspiration and serving as the basis for understanding the structure of a GTK application.
+
 ## License
 
 DocoLoco is licensed under the [MIT License](LICENSE).
