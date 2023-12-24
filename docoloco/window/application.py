@@ -9,9 +9,8 @@ from typing import cast
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 gi.require_version("WebKit", "6.0")
-from gi.repository import Adw, Gtk, Gdk, Gio, GLib, GObject, WebKit
-
-from ..registry import DocSet, get_registry
+from gi.repository import Adw, Gtk, Gio, GLib
+from ..registry import get_registry
 
 
 @Gtk.Template(filename=default_config.ui("main"))
@@ -175,6 +174,8 @@ class ApplicationWindow(Adw.ApplicationWindow):
         else:
             doc_page = self.selected_doc_page
             doc_page.load_uri(uri)
+
+        self.update_ui_for_page_change(doc_page)
 
     def doc_page(self, pos: int) -> DocPage:
         adw_page = self.tab_view.get_nth_page(pos)

@@ -69,6 +69,7 @@
             </child>
           </object>
         </property>
+        <property name="max-sidebar-width">450.0</property>
         <property name="sidebar">
           <object class="GtkBox" id="sidebar">
             <property name="orientation">vertical</property>

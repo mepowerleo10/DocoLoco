@@ -1,5 +1,9 @@
+import html
 import re
-from urllib.parse import unquote
+from urllib.parse import quote, unquote
+from lxml import etree
+
+from ..models.doc_set import Doc
 
 from .new_page import NewPage
 from ..config import default_config
@@ -9,7 +13,7 @@ from typing import cast
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 gi.require_version("WebKit", "6.0")
-from gi.repository import Adw, Gtk, Gdk, Gio, GLib, GObject, WebKit
+from gi.repository import Adw, Gtk, Gdk, Gio, GLib, GObject, WebKit, Pango
 
 from ..registry import DocSet
 
@@ -58,32 +62,27 @@ class DocPage(Adw.Bin):
         if self.docset:
             for title, docs in self.docset.sections.items():
                 section = Gtk.Expander(label=f"{title}")
+                section.set_margin_top(6)
                 section.set_margin_bottom(6)
-                """ section.override_background_color(
-                    Gtk.StateFlags.NORMAL, Gdk.RGBA(0, 0, 0, 0)
-                ) """
+
                 item_list = Gtk.ListBox()
+                item_list.set_margin_top(3)
                 item_list.set_selection_mode(Gtk.SelectionMode.SINGLE)
 
-                """ section = Adw.ExpanderRow()
-                section.set_title(title=title) """
                 for doc in docs:
-                    button = Gtk.Button(hexpand=True)
-                    # content = Adw.ButtonContent()
-                    # content.set_icon_name(doc.icon_name)
-                    # content.set_label(doc.name)
-                    # button.set_child(content)
-
-                    item_label = Gtk.Label(label=doc.name, halign=Gtk.Align.START)
-                    item_label.set_margin_bottom(5)
+                    item_label = Gtk.Label(halign=Gtk.Align.START)
+                    item_label.set_markup(
+                        f"<a href='{doc.path}'>{html.escape(doc.name)}</a>"
+                    )
                     item_label.set_cursor(Gdk.Cursor.new_from_name("pointer"))
                     item_label.set_margin_start(10)
-                    button.set_child(item_label)
-                    button.connect("activate", self.on_item_clicked)
-                    item_list.append(button)
+                    item_label.set_ellipsize(Pango.EllipsizeMode.END)
+                    item_label.set_tooltip_text(doc.name)
 
-                    # section.add_row(button)
-                    # item_list.append(button)
+                    item_label.connect("activate-link", self.on_item_clicked)
+                    item_label.connect("activate-current-link", self.on_item_clicked)
+                    item_list.append(item_label)
+
                 section.set_child(item_list)
                 list_box.append(section)
                 # self.sidebar.append(section)
@@ -94,23 +93,30 @@ class DocPage(Adw.Bin):
         scrolled_window.set_vexpand(True)
         self.sidebar.append(scrolled_window)
 
-    def on_item_clicked(self, *args):
-        # variant = GLib.Variant.new_string(path)
-        self.activate_action(f"win.open_page", None)
+    def on_item_clicked(self, label: Gtk.Label, path: str, *args):
+        label.stop_emission_by_name("activate-link")
+        variant = GLib.Variant.new_string(path)
+        self.activate_action(f"win.open_page", variant)
 
     def load_uri(self, uri: str):
         self.setup_search_signals()
         uri = unquote(uri)
         uri = self.clean_uri(uri)
-        # uri_components = uri.split("#")
-        # if len(uri_components) == 1:
-        #     self.base_uri, self.anchor = (uri_components[0], None)
-        # else:
-        #     self.base_uri, self.anchor = uri_components
 
-        self.web_view.load_uri(uri)
+        content = self.get_content(uri)
+        # self.web_view.load_uri(uri)
+        self.web_view.load_html(content, uri)
         # self.web_view.bind_property("title", self, "title", GObject.BindingFlags.DEFAULT)
         self.web_view.connect("load-changed", self.on_load_changed)
+
+    def get_content(self, uri: str):
+        uri = uri.split("://")[1].split("#")[0]
+        with open(uri, "r") as file:
+            content = "".join(file.readlines())
+            cleand_content = processed_xml = content.replace(
+                "<?xml", "<!--?xml"
+            ).replace("?>", "?-->")
+            return cleand_content
 
     def clean_uri(self, uri: str):
         # Define a regular expression pattern to find metadata tags
@@ -120,7 +126,7 @@ class DocPage(Adw.Bin):
         cleaned_uri = re.sub(metadata_pattern, "", uri)
         return cleaned_uri
 
-    def on_load(self, web_view, event):
+    def on_load(self, web_view, event):        
         if self.anchor and event == WebKit.LoadEvent.FINISHED:
             self.web_view.evaluate_javascript(
                 f"location.hash = '{self.anchor}'", -1, None, None, None, None, None
@@ -174,9 +180,6 @@ class DocPage(Adw.Bin):
         return self.web_view.can_go_back()
 
     def go_back(self, *args):
-        # history = self.web_view.get_back_forward_list()
-        # if history.get_back_item():
-        #     history.go_back()
         self.web_view.go_back()
 
     def can_go_forward(self) -> bool:
