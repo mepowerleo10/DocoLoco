@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.16.0 -->
+<interface>
+  <requires lib="gtk" version="4.12"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <template class="SectionWidget" parent="AdwBin">
+    <child>
+      <object class="GtkExpander" id="expander">
+        <property name="child">
+          <object class="GtkListView" id="list_view"/>
+        </property>
+        <property name="label-widget">
+          <object class="GtkBox">
+            <property name="hexpand">True</property>
+            <property name="hexpand-set">True</property>
+            <property name="spacing">4</property>
+            <child>
+              <object class="GtkImage" id="icon"/>
+            </child>
+            <child>
+              <object class="GtkLabel" id="label">
+                <property name="halign">start</property>
+                <property name="hexpand">True</property>
+                <property name="hexpand-set">True</property>
+              </object>
+            </child>
+          </object>
+        </property>
+      </object>
+    </child>
+  </template>
+</interface>
