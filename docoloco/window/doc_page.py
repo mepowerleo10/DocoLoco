@@ -22,6 +22,7 @@ class DocPage(Adw.Bin):
     __gtype_name__ = "DocPage"
 
     web_view = cast(WebKit.WebView, Gtk.Template.Child("web_view"))
+    progress_bar = cast(Gtk.SearchBar, Gtk.Template.Child("progress_bar"))
     search_bar = cast(Gtk.SearchBar, Gtk.Template.Child("search_bar"))
     search_count_label = cast(Gtk.Label, Gtk.Template.Child("search_count_label"))
     search_entry = cast(Gtk.SearchEntry, Gtk.Template.Child("entry"))
@@ -50,6 +51,13 @@ class DocPage(Adw.Bin):
             self.load_uri(docset.index_file_path.as_uri())
         else:
             self.set_child(NewPage())
+
+        self.web_view.bind_property(
+            "estimated-load-progress",
+            self.progress_bar,
+            "fraction",
+            GObject.BindingFlags.DEFAULT,
+        )
 
     def on_load_changed(self, *args):
         self.title = self.web_view.get_title()
@@ -164,10 +172,11 @@ class DocPage(Adw.Bin):
         return cleaned_uri
 
     def on_load(self, web_view, event):
-        if self.anchor and event == WebKit.LoadEvent.FINISHED:
-            self.web_view.evaluate_javascript(
-                f"location.hash = '{self.anchor}'", -1, None, None, None, None, None
-            )
+        match event:
+            case WebKit.LoadEvent.STARTED:
+                self.progress_bar.set_visible(True)
+            case  WebKit.LoadEvent.FINISHED:
+                self.progress_bar.set_visible(False)
 
     def on_load_failed(self, web_view, load_event, failing_uri: str, error):
         print(error)
