@@ -62,44 +62,6 @@ class DocPage(Adw.Bin):
     def on_load_changed(self, *args):
         self.title = self.web_view.get_title()
 
-    def update_sections(self):
-        list_box = Gtk.ListBox()
-        list_box.set_selection_mode(Gtk.SelectionMode.SINGLE)
-
-        if self.docset:
-            for title, docs in self.docset.sections.items():
-                section = Gtk.Expander(label=f"{title}")
-                section.set_margin_top(6)
-                section.set_margin_bottom(6)
-
-                item_list = Gtk.ListBox()
-                item_list.set_margin_top(3)
-                item_list.set_selection_mode(Gtk.SelectionMode.SINGLE)
-
-                for doc in docs:
-                    item_label = Gtk.Label(halign=Gtk.Align.START)
-                    item_label.set_markup(
-                        f"<a href='{doc.path}'>{html.escape(doc.name)}</a>"
-                    )
-                    item_label.set_cursor(Gdk.Cursor.new_from_name("pointer"))
-                    item_label.set_margin_start(10)
-                    item_label.set_ellipsize(Pango.EllipsizeMode.END)
-                    item_label.set_tooltip_text(doc.name)
-
-                    item_label.connect("activate-link", self.on_item_clicked)
-                    item_label.connect("activate-current-link", self.on_item_clicked)
-                    item_list.append(item_label)
-
-                section.set_child(item_list)
-                list_box.append(section)
-                # self.sidebar.append(section)
-
-        scrolled_window = Gtk.ScrolledWindow()
-        # scrolled_window.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-        scrolled_window.set_child(list_box)
-        scrolled_window.set_vexpand(True)
-        self.sidebar.append(scrolled_window)
-
     def _update_sections(self):
         if not self.docset:
             return
@@ -175,7 +137,7 @@ class DocPage(Adw.Bin):
         match event:
             case WebKit.LoadEvent.STARTED:
                 self.progress_bar.set_visible(True)
-            case  WebKit.LoadEvent.FINISHED:
+            case WebKit.LoadEvent.FINISHED:
                 self.progress_bar.set_visible(False)
 
     def on_load_failed(self, web_view, load_event, failing_uri: str, error):
