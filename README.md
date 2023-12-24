@@ -9,6 +9,16 @@ DocoLoco is a documentation browser that utilizes documentation sets provided by
 - [Linux Dependencies](#linux-dependencies)
 - [Development](#development)
 
+## Preview
+
+Here are some preview images of DocoLoco in action:
+
+| Homepage                              | Documentation                                       | Tabs Overview                                   |
+| ------------------------------------- | --------------------------------------------------- | ----------------------------------------------- |
+| ![Homepage](screenshots/homepage.png) | ![Documatation Page](screenshots/documentation.png) | ![Tabs Overview](screenshots/tabs-overview.png) |
+
+````
+
 ## Installation
 
 To get started with DocoLoco, follow these steps:
@@ -18,7 +28,7 @@ To get started with DocoLoco, follow these steps:
    ```bash
    git clone https://github.com/your-username/DocoLoco.git
    cd DocoLoco
-   ```
+````
 
 2. **Install Poetry:**
 
@@ -47,8 +57,9 @@ To get started with DocoLoco, follow these steps:
 ## Running the Project
 
 Now that you have the project and its dependencies installed, you can run DocoLoco using the following steps:
+
 1. **Add Documentations:**
-  Add the docsets you need using Zeal. The DocSets will automatically be populated by the application.
+   Add the docsets you need using Zeal. The DocSets will automatically be populated by the application.
 
 2. **Activate the Virtual Environment:**
 
@@ -74,23 +85,23 @@ If you are on a Linux system, make sure you have the GTK4 development libraries 
 
 - **Ubuntu/Debian:**
 
-   ```bash
-   sudo apt-get install libgtk-4-dev
-   ```
+  ```bash
+  sudo apt-get install libgtk-4-dev
+  ```
 
 - **Fedora:**
 
-   ```bash
-   sudo dnf install gtk4-devel
-   ```
+  ```bash
+  sudo dnf install gtk4-devel
+  ```
 
 - **Arch Linux:**
 
-   ```bash
-   sudo pacman -S gtk4
-   ```
+  ```bash
+  sudo pacman -S gtk4
+  ```
 
-   Adjust the package names according to your distribution.
+  Adjust the package names according to your distribution.
 
 ## Development
 
