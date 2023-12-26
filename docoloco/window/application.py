@@ -1,14 +1,16 @@
-from .doc_page import DocPage
-from ..locator import Locator
-from ..config import default_config
-import gi
 from typing import cast
+
+import gi
+
+from ..config import default_config
+from ..locator import Locator
+from ..registry import get_registry
+from .doc_page import DocPage
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 gi.require_version("WebKit", "6.0")
-from gi.repository import Adw, Gtk, Gio, GLib, GObject
-from ..registry import get_registry
+from gi.repository import Adw, Gio, GLib, GObject, Gtk  # noqa: E402
 
 
 @Gtk.Template(filename=default_config.ui("main"))

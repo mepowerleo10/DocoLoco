@@ -1,14 +1,15 @@
 import html
-from ..models import Section, Doc, DocSet
-import gi
 from typing import cast
+
+import gi
+
+from ..config import default_config
+from ..models import Doc, DocSet, Section
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 gi.require_version("WebKit", "6.0")
-from gi.repository import Adw, Gtk, Gdk, Gio, GLib, GObject, WebKit, Pango
-
-from ..config import default_config
+from gi.repository import Adw, Gdk, GLib, GObject, Gtk, Pango  # noqa: E402
 
 
 def plurarize(val: str) -> str:
