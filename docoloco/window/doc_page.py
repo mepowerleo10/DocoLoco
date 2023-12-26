@@ -13,7 +13,7 @@ from typing import cast
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 gi.require_version("WebKit", "6.0")
-from gi.repository import Adw, Gtk, Gio, GLib, GObject, WebKit
+from gi.repository import Adw, Gtk, Gio, GLib, GObject, WebKit  # noqa: E402
 
 
 @Gtk.Template(filename=default_config.ui("doc_page"))

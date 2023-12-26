@@ -1,13 +1,14 @@
 from typing import cast
 
-from .models import DocSet, Doc
-from .config import default_config
-from .registry import get_registry
 import gi
+
+from .config import default_config
+from .models import Doc, DocSet
+from .registry import get_registry
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gtk, Gdk, Gio, GLib, GObject
+from gi.repository import Adw, Gdk, Gio, GLib, GObject, Gtk  # noqa: E402
 
 
 @Gtk.Template(filename=default_config.ui("locator"))

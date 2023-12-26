@@ -96,4 +96,4 @@ class SectionWidget(Adw.Bin):
             self.docset.populate_section(self.section.title)
         else:
             variant = GLib.Variant.new_string(path)
-            self.activate_action(f"win.open_page", variant)
+            self.activate_action("win.open_page", variant)

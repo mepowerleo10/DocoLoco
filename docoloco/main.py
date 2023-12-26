@@ -1,13 +1,13 @@
 import sys
+
 import gi
 
-from .window import ApplicationWindow
-
 from .registry import get_registry
+from .window import ApplicationWindow
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import GLib, Adw  # noqa: E402
+from gi.repository import Adw, GLib  # noqa: E402
 
 
 class DocoLoco(Adw.Application):

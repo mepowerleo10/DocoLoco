@@ -1,14 +1,14 @@
-import re
-from ..config import default_config
-import gi
 from typing import cast
+
+import gi
+
+from ..config import default_config
+from ..registry import get_registry
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 gi.require_version("WebKit", "6.0")
-from gi.repository import Adw, Gtk, Gdk, Gio, GLib, GObject, WebKit
-
-from ..registry import get_registry
+from gi.repository import Adw, GLib, Gtk  # noqa: E402
 
 
 @Gtk.Template(filename=default_config.ui("new_page"))
