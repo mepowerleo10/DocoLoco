@@ -11,6 +11,17 @@ from gi.repository import Adw, Gtk, Gdk, Gio, GLib, GObject, WebKit, Pango
 from ..config import default_config
 
 
+def plurarize(val: str) -> str:
+    last_char = val[-1]
+    match last_char:
+        case "s":
+            return f"{val}es"
+        case "y":
+            return f"{val[:-1]}ies"
+        case _:
+            return f"{val}s"
+
+
 @Gtk.Template(filename=default_config.ui("section"))
 class SectionWidget(Adw.Bin):
     __gtype_name__ = "SectionWidget"
@@ -32,7 +43,7 @@ class SectionWidget(Adw.Bin):
             self.section = section
             self.docset = docset
 
-            self.label.set_label(f"{section.title} ({section.count})")
+            self.label.set_label(f"{plurarize(section.title)} ({section.count})")
             self.icon.set_from_icon_name(section.icon_name)
 
             docs_list_store = self.docset.sections[self.section.title]

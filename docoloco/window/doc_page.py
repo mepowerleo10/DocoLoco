@@ -1,10 +1,9 @@
-import html
 import re
 from urllib.parse import unquote
 
 from .section_widget import SectionWidget
 
-from ..models import Doc, Section, DocSet
+from ..models import Section, DocSet
 
 from .new_page import NewPage
 from ..config import default_config
@@ -14,7 +13,7 @@ from typing import cast
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 gi.require_version("WebKit", "6.0")
-from gi.repository import Adw, Gtk, Gdk, Gio, GLib, GObject, WebKit, Pango
+from gi.repository import Adw, Gtk, Gio, GLib, GObject, WebKit
 
 
 @Gtk.Template(filename=default_config.ui("doc_page"))
@@ -28,20 +27,16 @@ class DocPage(Adw.Bin):
     search_entry = cast(Gtk.SearchEntry, Gtk.Template.Child("entry"))
     sidebar = cast(Gtk.Box, Gtk.Template.Child("sidebar"))
     search_ready = False
-    base_uri: str = None
-    anchor: str = None
+    title = GObject.Property(
+        type=str, default="Choose DocSet", flags=GObject.ParamFlags.READWRITE
+    )
 
     def __init__(self, docset: DocSet = None, uri: str = None):
         super().__init__(hexpand=True, vexpand=True)
         self.docset = docset
 
-        self.title = "Choose a DocSet"
-
-        # context = WebKit.WebContext#.new_with_website_data_manager(WebKit.WebsiteDataManager())
-        # self.web_view = WebKit.WebView()
-
         self.web_view.connect("load-failed", self.on_load_failed)
-        self.web_view.connect("load-changed", self.on_load)
+        self.web_view.connect("load-changed", self.on_load_changed)
 
         self._update_sections()
 
@@ -58,47 +53,6 @@ class DocPage(Adw.Bin):
             "fraction",
             GObject.BindingFlags.DEFAULT,
         )
-
-    def on_load_changed(self, *args):
-        self.title = self.web_view.get_title()
-
-    def update_sections(self):
-        list_box = Gtk.ListBox()
-        list_box.set_selection_mode(Gtk.SelectionMode.SINGLE)
-
-        if self.docset:
-            for title, docs in self.docset.sections.items():
-                section = Gtk.Expander(label=f"{title}")
-                section.set_margin_top(6)
-                section.set_margin_bottom(6)
-
-                item_list = Gtk.ListBox()
-                item_list.set_margin_top(3)
-                item_list.set_selection_mode(Gtk.SelectionMode.SINGLE)
-
-                for doc in docs:
-                    item_label = Gtk.Label(halign=Gtk.Align.START)
-                    item_label.set_markup(
-                        f"<a href='{doc.path}'>{html.escape(doc.name)}</a>"
-                    )
-                    item_label.set_cursor(Gdk.Cursor.new_from_name("pointer"))
-                    item_label.set_margin_start(10)
-                    item_label.set_ellipsize(Pango.EllipsizeMode.END)
-                    item_label.set_tooltip_text(doc.name)
-
-                    item_label.connect("activate-link", self.on_item_clicked)
-                    item_label.connect("activate-current-link", self.on_item_clicked)
-                    item_list.append(item_label)
-
-                section.set_child(item_list)
-                list_box.append(section)
-                # self.sidebar.append(section)
-
-        scrolled_window = Gtk.ScrolledWindow()
-        # scrolled_window.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-        scrolled_window.set_child(list_box)
-        scrolled_window.set_vexpand(True)
-        self.sidebar.append(scrolled_window)
 
     def _update_sections(self):
         if not self.docset:
@@ -118,10 +72,8 @@ class DocPage(Adw.Bin):
         sections_tree = Gtk.ListView()
         sections_tree.set_model(list_selection_model)
         sections_tree.set_factory(view_factory)
-        # sections_tree.connect("activate", self._on_subdocument_clicked)
 
         scrolled_window = Gtk.ScrolledWindow()
-        # scrolled_window.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         scrolled_window.set_child(sections_tree)
         scrolled_window.set_vexpand(True)
         self.sidebar.append(scrolled_window)
@@ -147,12 +99,10 @@ class DocPage(Adw.Bin):
         uri = unquote(uri)
         uri = self.clean_uri(uri)
 
-        # content = self.get_content(uri)
-        # self.web_view.load_html(content, uri)
-
         self.web_view.load_uri(uri)
-        # self.web_view.bind_property("title", self, "title", GObject.BindingFlags.DEFAULT)
-        self.web_view.connect("load-changed", self.on_load_changed)
+        self.web_view.bind_property(
+            "title", self, "title", GObject.BindingFlags.DEFAULT
+        )
 
     def get_content(self, uri: str):
         uri = uri.split("://")[1].split("#")[0]
@@ -171,11 +121,11 @@ class DocPage(Adw.Bin):
         cleaned_uri = re.sub(metadata_pattern, "", uri)
         return cleaned_uri
 
-    def on_load(self, web_view, event):
+    def on_load_changed(self, web_view, event):
         match event:
             case WebKit.LoadEvent.STARTED:
                 self.progress_bar.set_visible(True)
-            case  WebKit.LoadEvent.FINISHED:
+            case WebKit.LoadEvent.FINISHED:
                 self.progress_bar.set_visible(False)
 
     def on_load_failed(self, web_view, load_event, failing_uri: str, error):
@@ -222,12 +172,14 @@ class DocPage(Adw.Bin):
     def search_previous(self, *args):
         self.find_controller.search_previous()
 
+    @property
     def can_go_back(self) -> bool:
         return self.web_view.can_go_back()
 
     def go_back(self, *args):
         self.web_view.go_back()
 
+    @property
     def can_go_forward(self) -> bool:
         return self.web_view.can_go_forward()
 
