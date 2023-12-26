@@ -1,5 +1,3 @@
-import re
-
 from .doc_page import DocPage
 from ..locator import Locator
 from ..config import default_config
@@ -9,7 +7,7 @@ from typing import cast
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 gi.require_version("WebKit", "6.0")
-from gi.repository import Adw, Gtk, Gio, GLib
+from gi.repository import Adw, Gtk, Gio, GLib, GObject
 from ..registry import get_registry
 
 
@@ -30,7 +28,12 @@ class ApplicationWindow(Adw.ApplicationWindow):
         self.app = app
         self.locator = Locator()
 
+        self.go_back_action = Gio.SimpleAction(name="go_back")
+        self.go_forward_action = Gio.SimpleAction(name="go_forward")
+
         self.tab_view.connect("notify::title", self.on_tab_change)
+        self.tab_view.connect("notify::selected-page", self.on_tab_change)
+
         if self.tab_view.get_n_pages() == 0:
             self.new_tab()
 
@@ -43,11 +46,9 @@ class ApplicationWindow(Adw.ApplicationWindow):
 
         self.setup_actions()
 
-        self.go_back_action = Gio.SimpleAction(name="go_back")
         self.go_back_action.connect("activate", self.selected_doc_page.go_back)
         self.add_action(self.go_back_action)
 
-        self.go_forward_action = Gio.SimpleAction(name="go_forward")
         self.go_forward_action.connect("activate", self.selected_doc_page.go_forward)
         self.add_action(self.go_forward_action)
 
@@ -107,32 +108,22 @@ class ApplicationWindow(Adw.ApplicationWindow):
         else:
             page = self.tab_view.append(doc_page)
 
-        # doc_page.bind_property("title", page, "title", GObject.BindingFlags.DEFAULT)
-        page.set_title(doc_page.title)
+        doc_page.bind_property("title", page, "title", GObject.BindingFlags.DEFAULT)
+        page.connect("notify::title", self.on_page_title_changed)
         page.set_live_thumbnail(True)
         self.tab_view.set_selected_page(page)
 
-    def on_tab_change(self, *args):
-        pass
+    def on_page_title_changed(self, page: Adw.TabPage, title):
+        self.update_ui_for_page_change(page.get_child())
 
-    def on_doc_page_change(self, doc_page: DocPage):
-        if doc_page != self.selected_doc_page:
-            return
-
-        self.update_ui_for_page_change(doc_page)
-
-    def on_selected_page_change(self, **kwargs):
-        doc_page = self.selected_doc_page
-        self.update_ui_for_page_change(doc_page)
-
-        if doc_page:
-            self.change_docset(GLib.Variant(doc_page.docset.name))
+    def on_tab_change(self, tab_view: Adw.TabView, selecte_page):
+        self.update_ui_for_page_change(self.selected_doc_page)
 
     def update_ui_for_page_change(self, doc_page: DocPage = None):
         if doc_page:
             self.locator.set_docset(doc_page.docset)
-            self.go_back_action.set_enabled(doc_page.can_go_back())
-            self.go_forward_action.set_enabled(doc_page.can_go_forward())
+            self.go_back_action.set_enabled(doc_page.can_go_back)
+            self.go_forward_action.set_enabled(doc_page.can_go_forward)
         else:
             self.locator.set_docset(None)
             self.go_back_action.set_enabled(False)
@@ -155,14 +146,6 @@ class ApplicationWindow(Adw.ApplicationWindow):
 
         self.add_tab(doc_page, position)
 
-    """ def change_docset(self, name: GLib.Variant = None):
-        if not name:
-            return
-
-        docset = get_registry().get(name.get_string())
-        self.locator.docset = docset
-        self.selected_doc_page(docset) """
-
     def open_page(self, action=None, variant: GLib.Variant = None):
         if variant:
             self.open_page_uri(variant.get_string())
@@ -175,8 +158,6 @@ class ApplicationWindow(Adw.ApplicationWindow):
             doc_page = self.selected_doc_page
             doc_page.load_uri(uri)
 
-        self.update_ui_for_page_change(doc_page)
-
     def doc_page(self, pos: int) -> DocPage:
         adw_page = self.tab_view.get_nth_page(pos)
 
@@ -184,8 +165,7 @@ class ApplicationWindow(Adw.ApplicationWindow):
 
     @property
     def selected_doc_page(self) -> DocPage:
-        adw_page = self.tab_view.get_selected_page()
-        # if not adw_page.child
-        # adw_page.child = DocPage()
+        page = self.tab_view.get_selected_page()
 
-        return adw_page.get_child()
+        if page:
+            return page.get_child()
