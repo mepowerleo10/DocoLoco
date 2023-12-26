@@ -427,5 +427,5 @@ class DocSet(GObject.Object):
         return icon
 
     def get_uri_to(self, path: str) -> str:
-        full_path = (self.documents_dir / path)
-        return full_path.as_uri()
+        full_path = f"{self.documents_dir.as_uri()}/{path}"
+        return full_path

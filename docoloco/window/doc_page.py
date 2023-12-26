@@ -28,17 +28,12 @@ class DocPage(Adw.Bin):
     search_entry = cast(Gtk.SearchEntry, Gtk.Template.Child("entry"))
     sidebar = cast(Gtk.Box, Gtk.Template.Child("sidebar"))
     search_ready = False
-    base_uri: str = None
-    anchor: str = None
 
     def __init__(self, docset: DocSet = None, uri: str = None):
         super().__init__(hexpand=True, vexpand=True)
         self.docset = docset
 
         self.title = "Choose a DocSet"
-
-        # context = WebKit.WebContext#.new_with_website_data_manager(WebKit.WebsiteDataManager())
-        # self.web_view = WebKit.WebView()
 
         self.web_view.connect("load-failed", self.on_load_failed)
         self.web_view.connect("load-changed", self.on_load)
@@ -80,10 +75,8 @@ class DocPage(Adw.Bin):
         sections_tree = Gtk.ListView()
         sections_tree.set_model(list_selection_model)
         sections_tree.set_factory(view_factory)
-        # sections_tree.connect("activate", self._on_subdocument_clicked)
 
         scrolled_window = Gtk.ScrolledWindow()
-        # scrolled_window.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         scrolled_window.set_child(sections_tree)
         scrolled_window.set_vexpand(True)
         self.sidebar.append(scrolled_window)
@@ -109,8 +102,6 @@ class DocPage(Adw.Bin):
         uri = unquote(uri)
         uri = self.clean_uri(uri)
 
-        # content = self.get_content(uri)
-        # self.web_view.load_html(content, uri)
 
         self.web_view.load_uri(uri)
         # self.web_view.bind_property("title", self, "title", GObject.BindingFlags.DEFAULT)
