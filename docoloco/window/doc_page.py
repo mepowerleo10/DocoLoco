@@ -92,7 +92,7 @@ class DocPage(Adw.Bin):
     def on_item_clicked(self, label: Gtk.Label, path: str, *args):
         label.stop_emission_by_name("activate-link")
         variant = GLib.Variant.new_string(path)
-        self.activate_action(f"win.open_page", variant)
+        self.activate_action("win.open_page", variant)
 
     def load_uri(self, uri: str):
         self.setup_search_signals()
@@ -108,9 +108,7 @@ class DocPage(Adw.Bin):
         uri = uri.split("://")[1].split("#")[0]
         with open(uri, "r") as file:
             content = "".join(file.readlines())
-            cleand_content = processed_xml = content.replace(
-                "<?xml", "<!--?xml"
-            ).replace("?>", "?-->")
+            cleand_content = content.replace("<?xml", "<!--?xml").replace("?>", "?-->")
             return cleand_content
 
     def clean_uri(self, uri: str):
@@ -188,3 +186,8 @@ class DocPage(Adw.Bin):
 
     def page_search(self, *args):
         self.search_bar.set_search_mode(True)
+
+    def filter_docset(self, name: str):
+        if isinstance(self.get_child(), NewPage):
+            new_page = cast(NewPage, self.get_child())
+            new_page.filter_item(name)

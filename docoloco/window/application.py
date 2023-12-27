@@ -94,6 +94,12 @@ class ApplicationWindow(Adw.ApplicationWindow):
         g_action.connect("activate", self.change_docset)
         self.add_action(g_action)
 
+        g_action = Gio.SimpleAction(
+            name="filter_docset", parameter_type=GLib.VariantType.new("s")
+        )
+        g_action.connect("activate", self.filter_docset)
+        self.add_action(g_action)
+
     @Gtk.Template.Callback()
     def new_tab(self, *args, **kwargs):
         docset = None
@@ -133,6 +139,12 @@ class ApplicationWindow(Adw.ApplicationWindow):
 
     def focus_locator(self, *args):
         self.locator.toggle_focus()
+
+    def filter_docset(self, action=None, name: GLib.Variant = None):
+        if not name:
+            return
+
+        self.selected_doc_page.filter_docset(name.get_string())
 
     def change_docset(self, action=None, name: GLib.Variant = None):
         if not name:

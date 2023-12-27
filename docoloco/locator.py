@@ -79,22 +79,26 @@ class Locator(Adw.Bin):
 
         if not (text or self.popover.is_visible()):
             return
+        
+        if self.docset:
+            results = self.docset.search(text)
+            self.search_result_model.remove_all()
+            for result in results:
+                self.search_result_model.append(result)
 
-        results = self.docset.search(text)
-        self.search_result_model.remove_all()
-        for result in results:
-            self.search_result_model.append(result)
-
-        # self.search_result_model.data = results
-        self.search_selection_model.set_selected(False)
-        self.popover.set_visible(True)
+            # self.search_result_model.data = results
+            self.search_selection_model.set_selected(False)
+            self.popover.set_visible(True)
+        else:
+            title_variant = GLib.Variant.new_string(text)
+            self.activate_action("win.filter_docset", title_variant)
 
     def entry_activated(self, pos: int = None, doc: Doc = None):
         pos = pos if pos else self.search_selection_model.get_selected()
         doc = self.search_result_model.get_item(pos)
 
         variant = GLib.Variant.new_string(doc.path)
-        self.activate_action(f"win.open_page", variant)
+        self.activate_action("win.open_page", variant)
         self.toggle_focus()
 
     def set_docset(self, docset: DocSet):
@@ -103,9 +107,11 @@ class Locator(Adw.Bin):
         if docset:
             self.docset_label.set_label(docset.title)
             self.docset_icon.set_from_gicon(docset.icon)
+            self.entry.set_placeholder_text("Press Ctrl+P to search sections and symbols")
         else:
             self.docset_label.set_label("DocSet")
             self.docset_icon.set_from_icon_name("accessories-dictionary-symbolic")
+            self.entry.set_placeholder_text("Press Ctrl+P to filter docsets")
 
     def toggle_focus(self, *args):
         if self.popover.get_visible():
