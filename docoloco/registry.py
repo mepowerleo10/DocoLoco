@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from typing import Dict, List
 
 from .models import Doc, DocSet
@@ -17,7 +18,9 @@ class Registry:
     def initialize_providers(self):
         for provider in self.providers:
             provider.load()
-            self.entries |= provider.docs
+            
+            sorted_docs = OrderedDict(sorted(provider.docs.items()))
+            self.entries |= sorted_docs
 
     def search(self, term: str) -> List[Doc]:
         results: List[Doc] = list()
