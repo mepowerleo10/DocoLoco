@@ -1,7 +1,7 @@
 import json
 import plistlib
 import sqlite3
-from collections import namedtuple
+from collections import OrderedDict, namedtuple
 from enum import Enum
 from pathlib import Path
 from typing import Dict, List
@@ -23,6 +23,8 @@ class DashProvider(DocumentationProvider):
                 self.docs[doc.name] = doc
             except Exception as e:
                 print(e)
+
+        self.docs = OrderedDict(sorted(self.docs.items()))
 
 def namedtuple_factory(cursor: sqlite3.Cursor, row):
     fields = [column[0] for column in cursor.description]
