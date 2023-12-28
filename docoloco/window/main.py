@@ -14,7 +14,7 @@ from gi.repository import Adw, Gio, GLib, GObject, Gtk  # noqa: E402
 
 
 @Gtk.Template(filename=default_config.ui("main"))
-class ApplicationWindow(Adw.ApplicationWindow):
+class MainWindow(Adw.ApplicationWindow):
     __gtype_name__ = "ApplicationWindow"
     tab_view = cast(Adw.TabView, Gtk.Template.Child("view"))
     locator: Locator = None
