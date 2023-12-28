@@ -49,10 +49,10 @@ class MainWindow(Adw.ApplicationWindow):
 
         self.setup_actions()
 
-        self.go_back_action.connect("activate", self.selected_doc_page.go_back)
+        self.go_back_action.connect("activate", self.go_back)
         self.add_action(self.go_back_action)
 
-        self.go_forward_action.connect("activate", self.selected_doc_page.go_forward)
+        self.go_forward_action.connect("activate", self.go_forward)
         self.add_action(self.go_forward_action)
 
     def setup_actions(self):
@@ -140,29 +140,14 @@ class MainWindow(Adw.ApplicationWindow):
     def on_page_title_changed(self, page: Adw.TabPage, title):
         self.update_ui_for_page_change(page.get_child())
 
-    def on_tab_change(self, tab_view: Adw.TabView, selecte_page):
+    def on_tab_change(self, tab_view: Adw.TabView, selected_page):
         self.update_ui_for_page_change(self.selected_doc_page)
 
     def update_ui_for_page_change(self, doc_page: DocPage = None):
-        # TODO: Fix navigation action states
-        
-        self.selected_doc_page.bind_property(
-            "can_go_forward",
-            self.go_forward_action,
-            "enabled",
-            GObject.BindingFlags.DEFAULT,
-        )
-        self.selected_doc_page.bind_property(
-            "can_go_forward",
-            self.go_forward_action,
-            "enabled",
-            GObject.BindingFlags.DEFAULT,
-        )
-        
         if doc_page:
             self.locator.set_docset(doc_page.docset)
-            # self.go_back_action.set_enabled(doc_page.can_go_back)
-            # self.go_forward_action.set_enabled(doc_page.can_go_forward)
+            self.go_back_action.set_enabled(doc_page.can_go_back)
+            self.go_forward_action.set_enabled(doc_page.can_go_forward)
 
         else:
             self.locator.set_docset(None)
@@ -180,6 +165,12 @@ class MainWindow(Adw.ApplicationWindow):
 
     def reset_zoom(self, *args):
         self.selected_doc_page.reset_zoom()
+
+    def go_back(self, *args):
+        self.selected_doc_page.go_back()
+
+    def go_forward(self, *args):
+        self.selected_doc_page.go_forward()
 
     def filter_docset(self, action=None, name: GLib.Variant = None):
         if not name:
