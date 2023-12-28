@@ -113,6 +113,7 @@
 	(3,11,"GtkButton","icon-name","view-grid-symbolic",None,None,None,None,None,None,None,None,None),
 	(3,11,"GtkWidget","tooltip-text","View Open Tabs",None,None,None,None,None,None,None,None,None),
 	(3,12,"GtkButton","icon-name","tab-new-symbolic",None,None,None,None,None,None,None,None,None),
+	(3,13,"AdwTabBar","view","14",None,None,None,None,None,None,None,None,None),
 	(3,14,"GtkWidget","vexpand","True",None,None,None,None,None,None,None,None,None),
 	(3,17,"(item)","action","app.about",None,None,None,None,None,None,None,None,None),
 	(3,17,"(item)","label","About",None,None,None,None,None,None,None,None,None),

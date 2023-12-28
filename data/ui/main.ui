@@ -62,7 +62,9 @@
               </object>
             </child>
             <child>
-              <object class="AdwTabBar" id="tab_bar"/>
+              <object class="AdwTabBar" id="tab_bar">
+                <property name="view">view</property>
+              </object>
             </child>
             <child>
               <object class="AdwTabView" id="view">
