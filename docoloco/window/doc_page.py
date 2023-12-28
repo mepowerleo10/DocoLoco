@@ -31,6 +31,11 @@ class DocPage(Adw.Bin):
         type=str, default="Choose DocSet", flags=GObject.ParamFlags.READWRITE
     )
 
+    zoom_level = GObject.Property(
+        type=float, default=1.0, flags=GObject.ParamFlags.READWRITE
+    )
+    zoom_step = 0.1
+
     def __init__(self, docset: DocSet = None, uri: str = None):
         super().__init__(hexpand=True, vexpand=True)
         self.docset = docset
@@ -52,6 +57,12 @@ class DocPage(Adw.Bin):
             self.progress_bar,
             "fraction",
             GObject.BindingFlags.DEFAULT,
+        )
+        self.web_view.bind_property(
+            "zoom-level",
+            self,
+            "zoom_level",
+            GObject.BindingFlags.BIDIRECTIONAL,
         )
 
     def _update_sections(self):
@@ -170,19 +181,28 @@ class DocPage(Adw.Bin):
     def search_previous(self, *args):
         self.find_controller.search_previous()
 
-    @property
+    @GObject.Property(type=bool, default=False)
     def can_go_back(self) -> bool:
-        return self.web_view.can_go_back()
+        return self.web_view.can_go_back() if self.web_view else False
 
     def go_back(self, *args):
         self.web_view.go_back()
 
-    @property
+    @GObject.Property(type=bool, default=False)
     def can_go_forward(self) -> bool:
-        return self.web_view.can_go_forward()
+        return self.web_view.can_go_forward() if self.web_view else False
 
     def go_forward(self, *args):
         return self.web_view.go_forward()
+
+    def zoom_in(self, *args):
+        self.zoom_level = self.zoom_level + self.zoom_step
+
+    def zoom_out(self, *args):
+        self.zoom_level = self.zoom_level - self.zoom_step
+
+    def reset_zoom(self, *args):
+        self.zoom_level = 1.0
 
     def page_search(self, *args):
         self.search_bar.set_search_mode(True)

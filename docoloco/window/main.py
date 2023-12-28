@@ -17,6 +17,7 @@ from gi.repository import Adw, Gio, GLib, GObject, Gtk  # noqa: E402
 class MainWindow(Adw.ApplicationWindow):
     __gtype_name__ = "ApplicationWindow"
     tab_view = cast(Adw.TabView, Gtk.Template.Child("view"))
+    tab_bar = cast(Adw.TabBar, Gtk.Template.Child())
     locator: Locator = None
     header_bar: Adw.HeaderBar = cast(Adw.HeaderBar, Gtk.Template.Child("header_bar"))
 
@@ -70,6 +71,21 @@ class MainWindow(Adw.ApplicationWindow):
                 "name": "focus_locator",
                 "shortcut": "<primary>P",
                 "closure": self.focus_locator,
+            },
+            {
+                "name": "zoom_in",
+                "shortcut": "<primary>equal",
+                "closure": self.zoom_in,
+            },
+            {
+                "name": "zoom_out",
+                "shortcut": "<primary>minus",
+                "closure": self.zoom_out,
+            },
+            {
+                "name": "reset_zoom",
+                "shortcut": "<primary>plus",
+                "closure": self.reset_zoom,
             },
         ]
 
@@ -128,10 +144,26 @@ class MainWindow(Adw.ApplicationWindow):
         self.update_ui_for_page_change(self.selected_doc_page)
 
     def update_ui_for_page_change(self, doc_page: DocPage = None):
+        # TODO: Fix navigation action states
+        
+        self.selected_doc_page.bind_property(
+            "can_go_forward",
+            self.go_forward_action,
+            "enabled",
+            GObject.BindingFlags.DEFAULT,
+        )
+        self.selected_doc_page.bind_property(
+            "can_go_forward",
+            self.go_forward_action,
+            "enabled",
+            GObject.BindingFlags.DEFAULT,
+        )
+        
         if doc_page:
             self.locator.set_docset(doc_page.docset)
-            self.go_back_action.set_enabled(doc_page.can_go_back)
-            self.go_forward_action.set_enabled(doc_page.can_go_forward)
+            # self.go_back_action.set_enabled(doc_page.can_go_back)
+            # self.go_forward_action.set_enabled(doc_page.can_go_forward)
+
         else:
             self.locator.set_docset(None)
             self.go_back_action.set_enabled(False)
@@ -139,6 +171,15 @@ class MainWindow(Adw.ApplicationWindow):
 
     def focus_locator(self, *args):
         self.locator.toggle_focus()
+
+    def zoom_in(self, *args):
+        self.selected_doc_page.zoom_in()
+
+    def zoom_out(self, *args):
+        self.selected_doc_page.zoom_out()
+
+    def reset_zoom(self, *args):
+        self.selected_doc_page.reset_zoom()
 
     def filter_docset(self, action=None, name: GLib.Variant = None):
         if not name:
