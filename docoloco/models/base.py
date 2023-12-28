@@ -226,6 +226,10 @@ class DocSet(GObject.Object):
         return Gio.ListStore(item_type=Doc)
 
     @property
+    def is_populated(self) -> bool:
+        return len(self.sections) > 0
+
+    @property
     def icon(self):
         icon_path: Path = self.icon_files[0]
         icon = Gio.FileIcon.new_for_string(icon_path.as_posix())

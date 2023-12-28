@@ -88,7 +88,7 @@ class DashDocSet(DocSet):
 
         self.count_symbols()
 
-        self.populate_all_sections()
+        # self.populate_all_sections()
     
     def load_metadata(self):
         """Reads the meta.json file"""
