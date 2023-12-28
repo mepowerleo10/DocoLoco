@@ -6,18 +6,7 @@
   <requires lib="libadwaita" version="1.4"/>
   <template class="NewPage" parent="AdwBin">
     <child>
-      <object class="AdwClamp">
-        <property name="maximum-size">1000</property>
-        <child>
-          <object class="GtkScrolledWindow">
-            <child>
-              <object class="GtkBox" id="providers_box">
-                <property name="orientation">vertical</property>
-              </object>
-            </child>
-          </object>
-        </child>
-      </object>
+      <object class="AdwNavigationView" id="navigation_view"/>
     </child>
   </template>
 </interface>

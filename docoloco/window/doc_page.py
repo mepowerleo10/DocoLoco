@@ -50,6 +50,8 @@ class DocPage(Adw.Bin):
         elif docset:
             self.load_uri(docset.index_file_path.as_uri())
         else:
+            new_page = NewPage()
+            new_page.bind_property("title", self, "title", GObject.BindingFlags.DEFAULT)
             self.set_child(NewPage())
 
         self.web_view.bind_property(

@@ -1,4 +1,4 @@
-from typing import cast
+from typing import Callable, cast
 
 import gi
 
@@ -15,10 +15,15 @@ from gi.repository import Adw, GLib, Gtk  # noqa: E402
 class ProviderWidget(Adw.Bin):
     __gtype_name__ = "ProviderWidget"
 
+    back_btn = cast(Gtk.Button, Gtk.Template.Child())
     title = cast(Gtk.Label, Gtk.Template.Child())
     docsets_box = cast(Gtk.FlowBox, Gtk.Template.Child())
 
-    def __init__(self, provider: DocumentationProvider):
+    def __init__(
+        self,
+        provider: DocumentationProvider,
+        on_back_callback: Callable[[None], None] = None,
+    ):
         super().__init__()
 
         self.provider = provider
@@ -41,3 +46,9 @@ class ProviderWidget(Adw.Bin):
             )
             button.set_child(box)
             self.docsets_box.append(button)
+
+        self.back_btn.connect("activate", self.on_click_back)
+
+    def on_click_back(self, *args):
+        # TODO: Quite frankly do not know why this callback does not work, will check on it tommorow probably...
+        pass

@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.16.0 -->
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.4"/>
+  <template class="ProvidersListWidget" parent="AdwNavigationPage">
+    <child>
+      <object class="GtkScrolledWindow">
+        <child>
+          <object class="AdwClamp">
+            <property name="hexpand">True</property>
+            <property name="maximum-size">-1</property>
+            <property name="vexpand">True</property>
+            <child>
+              <object class="GtkBox">
+                <property name="margin-bottom">24</property>
+                <property name="margin-end">12</property>
+                <property name="margin-start">12</property>
+                <property name="margin-top">24</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkListBox" id="providers_list_box">
+                    <property name="selection-mode">none</property>
+                    <style>
+                      <class name="boxed-list"/>
+                    </style>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>
