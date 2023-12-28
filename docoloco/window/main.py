@@ -1,20 +1,23 @@
-from .doc_page import DocPage
-from ..locator import Locator
-from ..config import default_config
-import gi
 from typing import cast
+
+import gi
+
+from ..config import default_config
+from ..locator import Locator
+from ..registry import get_registry
+from .doc_page import DocPage
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 gi.require_version("WebKit", "6.0")
-from gi.repository import Adw, Gtk, Gio, GLib, GObject
-from ..registry import get_registry
+from gi.repository import Adw, Gio, GLib, GObject, Gtk  # noqa: E402
 
 
 @Gtk.Template(filename=default_config.ui("main"))
-class ApplicationWindow(Adw.ApplicationWindow):
+class MainWindow(Adw.ApplicationWindow):
     __gtype_name__ = "ApplicationWindow"
     tab_view = cast(Adw.TabView, Gtk.Template.Child("view"))
+    tab_bar = cast(Adw.TabBar, Gtk.Template.Child())
     locator: Locator = None
     header_bar: Adw.HeaderBar = cast(Adw.HeaderBar, Gtk.Template.Child("header_bar"))
 
@@ -46,10 +49,10 @@ class ApplicationWindow(Adw.ApplicationWindow):
 
         self.setup_actions()
 
-        self.go_back_action.connect("activate", self.selected_doc_page.go_back)
+        self.go_back_action.connect("activate", self.go_back)
         self.add_action(self.go_back_action)
 
-        self.go_forward_action.connect("activate", self.selected_doc_page.go_forward)
+        self.go_forward_action.connect("activate", self.go_forward)
         self.add_action(self.go_forward_action)
 
     def setup_actions(self):
@@ -68,6 +71,21 @@ class ApplicationWindow(Adw.ApplicationWindow):
                 "name": "focus_locator",
                 "shortcut": "<primary>P",
                 "closure": self.focus_locator,
+            },
+            {
+                "name": "zoom_in",
+                "shortcut": "<primary>equal",
+                "closure": self.zoom_in,
+            },
+            {
+                "name": "zoom_out",
+                "shortcut": "<primary>minus",
+                "closure": self.zoom_out,
+            },
+            {
+                "name": "reset_zoom",
+                "shortcut": "<primary>plus",
+                "closure": self.reset_zoom,
             },
         ]
 
@@ -90,6 +108,12 @@ class ApplicationWindow(Adw.ApplicationWindow):
             name="change_docset", parameter_type=GLib.VariantType.new("s")
         )
         g_action.connect("activate", self.change_docset)
+        self.add_action(g_action)
+
+        g_action = Gio.SimpleAction(
+            name="filter_docset", parameter_type=GLib.VariantType.new("s")
+        )
+        g_action.connect("activate", self.filter_docset)
         self.add_action(g_action)
 
     @Gtk.Template.Callback()
@@ -116,7 +140,7 @@ class ApplicationWindow(Adw.ApplicationWindow):
     def on_page_title_changed(self, page: Adw.TabPage, title):
         self.update_ui_for_page_change(page.get_child())
 
-    def on_tab_change(self, tab_view: Adw.TabView, selecte_page):
+    def on_tab_change(self, tab_view: Adw.TabView, selected_page):
         self.update_ui_for_page_change(self.selected_doc_page)
 
     def update_ui_for_page_change(self, doc_page: DocPage = None):
@@ -124,6 +148,7 @@ class ApplicationWindow(Adw.ApplicationWindow):
             self.locator.set_docset(doc_page.docset)
             self.go_back_action.set_enabled(doc_page.can_go_back)
             self.go_forward_action.set_enabled(doc_page.can_go_forward)
+
         else:
             self.locator.set_docset(None)
             self.go_back_action.set_enabled(False)
@@ -131,6 +156,27 @@ class ApplicationWindow(Adw.ApplicationWindow):
 
     def focus_locator(self, *args):
         self.locator.toggle_focus()
+
+    def zoom_in(self, *args):
+        self.selected_doc_page.zoom_in()
+
+    def zoom_out(self, *args):
+        self.selected_doc_page.zoom_out()
+
+    def reset_zoom(self, *args):
+        self.selected_doc_page.reset_zoom()
+
+    def go_back(self, *args):
+        self.selected_doc_page.go_back()
+
+    def go_forward(self, *args):
+        self.selected_doc_page.go_forward()
+
+    def filter_docset(self, action=None, name: GLib.Variant = None):
+        if not name:
+            return
+
+        self.selected_doc_page.filter_docset(name.get_string())
 
     def change_docset(self, action=None, name: GLib.Variant = None):
         if not name:

@@ -13,7 +13,7 @@ from typing import cast
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 gi.require_version("WebKit", "6.0")
-from gi.repository import Adw, Gtk, Gio, GLib, GObject, WebKit
+from gi.repository import Adw, Gtk, Gio, GLib, GObject, WebKit  # noqa: E402
 
 
 @Gtk.Template(filename=default_config.ui("doc_page"))
@@ -30,6 +30,11 @@ class DocPage(Adw.Bin):
     title = GObject.Property(
         type=str, default="Choose DocSet", flags=GObject.ParamFlags.READWRITE
     )
+
+    zoom_level = GObject.Property(
+        type=float, default=1.0, flags=GObject.ParamFlags.READWRITE
+    )
+    zoom_step = 0.1
 
     def __init__(self, docset: DocSet = None, uri: str = None):
         super().__init__(hexpand=True, vexpand=True)
@@ -52,6 +57,12 @@ class DocPage(Adw.Bin):
             self.progress_bar,
             "fraction",
             GObject.BindingFlags.DEFAULT,
+        )
+        self.web_view.bind_property(
+            "zoom-level",
+            self,
+            "zoom_level",
+            GObject.BindingFlags.BIDIRECTIONAL,
         )
 
     def _update_sections(self):
@@ -92,7 +103,7 @@ class DocPage(Adw.Bin):
     def on_item_clicked(self, label: Gtk.Label, path: str, *args):
         label.stop_emission_by_name("activate-link")
         variant = GLib.Variant.new_string(path)
-        self.activate_action(f"win.open_page", variant)
+        self.activate_action("win.open_page", variant)
 
     def load_uri(self, uri: str):
         self.setup_search_signals()
@@ -108,9 +119,7 @@ class DocPage(Adw.Bin):
         uri = uri.split("://")[1].split("#")[0]
         with open(uri, "r") as file:
             content = "".join(file.readlines())
-            cleand_content = processed_xml = content.replace(
-                "<?xml", "<!--?xml"
-            ).replace("?>", "?-->")
+            cleand_content = content.replace("<?xml", "<!--?xml").replace("?>", "?-->")
             return cleand_content
 
     def clean_uri(self, uri: str):
@@ -172,19 +181,33 @@ class DocPage(Adw.Bin):
     def search_previous(self, *args):
         self.find_controller.search_previous()
 
-    @property
+    @GObject.Property(type=bool, default=False)
     def can_go_back(self) -> bool:
-        return self.web_view.can_go_back()
+        return self.web_view.can_go_back() if self.web_view else False
 
     def go_back(self, *args):
         self.web_view.go_back()
 
-    @property
+    @GObject.Property(type=bool, default=False)
     def can_go_forward(self) -> bool:
-        return self.web_view.can_go_forward()
+        return self.web_view.can_go_forward() if self.web_view else False
 
     def go_forward(self, *args):
         return self.web_view.go_forward()
 
+    def zoom_in(self, *args):
+        self.zoom_level = self.zoom_level + self.zoom_step
+
+    def zoom_out(self, *args):
+        self.zoom_level = self.zoom_level - self.zoom_step
+
+    def reset_zoom(self, *args):
+        self.zoom_level = 1.0
+
     def page_search(self, *args):
         self.search_bar.set_search_mode(True)
+
+    def filter_docset(self, name: str):
+        if isinstance(self.get_child(), NewPage):
+            new_page = cast(NewPage, self.get_child())
+            new_page.filter_item(name)

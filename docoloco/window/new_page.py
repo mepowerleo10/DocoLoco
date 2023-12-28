@@ -1,20 +1,20 @@
-import re
-from ..config import default_config
-import gi
 from typing import cast
+
+import gi
+
+from ..config import default_config
+from ..registry import get_registry
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 gi.require_version("WebKit", "6.0")
-from gi.repository import Adw, Gtk, Gdk, Gio, GLib, GObject, WebKit
-
-from ..registry import get_registry
+from gi.repository import Adw, GLib, Gtk  # noqa: E402
 
 
 @Gtk.Template(filename=default_config.ui("new_page"))
 class NewPage(Adw.Bin):
     __gtype_name__ = "NewPage"
-    box = cast(Gtk.FlowBox, Gtk.Template.Child("docsets"))
+    flowbox = cast(Gtk.FlowBox, Gtk.Template.Child("docsets"))
 
     def __init__(self):
         super().__init__()
@@ -36,4 +36,13 @@ class NewPage(Adw.Bin):
                 action_target=GLib.Variant.new_string(doc.name),
             )
             button.set_child(box)
-            self.box.append(button)
+            self.flowbox.append(button)
+
+    def filter_item(self, title: str):        
+        title = title.strip().lower()
+
+        def filter_func(box: Gtk.FlowBoxChild, *args):
+            label = box.get_child().get_child().get_last_child()
+            return title in label.get_label().lower()
+
+        self.flowbox.set_filter_func(filter_func, None)

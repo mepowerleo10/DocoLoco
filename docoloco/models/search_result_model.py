@@ -3,7 +3,7 @@ from . import Doc
 import gi
 
 gi.require_version("Gtk", "4.0")
-from gi.repository import  Gio, GObject
+from gi.repository import  Gio, GObject  # noqa: E402
 
 
 class SearchResultModel(GObject.Object, Gio.ListModel):
