@@ -4,6 +4,7 @@ from typing import Dict, List
 from .models import Doc, DocSet
 from .providers.base import DocumentationProvider
 from .providers.dash_provider import DashProvider
+from .providers.man_provider import ManProvider, get_all_man_providers
 
 
 class Registry:
@@ -13,12 +14,14 @@ class Registry:
     entries: Dict[str, DocSet] = dict()
 
     def __init__(self) -> None:
+        self.providers.extend(get_all_man_providers())
+
         self.initialize_providers()
 
     def initialize_providers(self):
         for provider in self.providers:
             provider.load()
-            
+
             sorted_docs = OrderedDict(sorted(provider.docs.items()))
             self.entries |= sorted_docs
 

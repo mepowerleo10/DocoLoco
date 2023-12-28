@@ -85,19 +85,19 @@ If you are on a Linux system, make sure you have the GTK4 development libraries 
 - **Ubuntu/Debian:**
 
   ```bash
-  sudo apt-get install libgtk-4-dev
+  sudo apt-get install libgtk-4-dev mandoc
   ```
 
 - **Fedora:**
 
   ```bash
-  sudo dnf install gtk4-devel
+  sudo dnf install gtk4-devel mandoc
   ```
 
 - **Arch Linux:**
 
   ```bash
-  sudo pacman -S gtk4
+  sudo pacman -S gtk4 mandoc
   ```
 
   Adjust the package names according to your distribution.

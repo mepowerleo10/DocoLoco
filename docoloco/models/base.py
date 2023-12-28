@@ -231,8 +231,12 @@ class DocSet(GObject.Object):
 
     @property
     def icon(self):
-        icon_path: Path = self.icon_files[0]
-        icon = Gio.FileIcon.new_for_string(icon_path.as_posix())
+        if self.icon_files:
+            icon_path: Path = self.icon_files[0]
+            icon = Gio.FileIcon.new_for_string(icon_path.as_posix())
+        else:
+            icon = Gio.icon_new_for_string("accessories-dictionary-symbolic")
+
         return icon
 
     @property

@@ -7,24 +7,12 @@
   <template class="NewPage" parent="AdwBin">
     <child>
       <object class="AdwClamp">
+        <property name="maximum-size">1000</property>
         <child>
-          <object class="AdwClamp">
+          <object class="GtkScrolledWindow">
             <child>
-              <object class="GtkBox">
-                <property name="margin-top">20</property>
+              <object class="GtkBox" id="providers_box">
                 <property name="orientation">vertical</property>
-                <property name="spacing">20</property>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="label">Available DocSets</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkFlowBox" id="docsets">
-                    <property name="column-spacing">2</property>
-                    <property name="min-children-per-line">3</property>
-                  </object>
-                </child>
               </object>
             </child>
           </object>

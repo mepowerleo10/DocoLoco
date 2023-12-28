@@ -14,4 +14,7 @@ class DocumentationProvider(ABC):
         self.root_path: Path = None
 
     def load(self) -> None:
-        pass
+        ...
+
+    def filter(self, doc_name: str):
+        ...
