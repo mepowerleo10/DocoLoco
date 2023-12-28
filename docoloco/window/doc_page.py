@@ -1,19 +1,18 @@
 import re
+from typing import cast
 from urllib.parse import unquote
 
-from .section_widget import SectionWidget
-
-from ..models import Section, DocSet
-
-from .new_page import NewPage
-from ..config import default_config
 import gi
-from typing import cast
+
+from ..config import default_config
+from ..models import DocSet, Section
+from .new_page import NewPage
+from .section_widget import SectionWidget
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 gi.require_version("WebKit", "6.0")
-from gi.repository import Adw, Gtk, Gio, GLib, GObject, WebKit  # noqa: E402
+from gi.repository import Adw, Gio, GLib, GObject, Gtk, WebKit  # noqa: E402
 
 
 @Gtk.Template(filename=default_config.ui("doc_page"))
@@ -42,6 +41,7 @@ class DocPage(Adw.Bin):
 
         self.web_view.connect("load-failed", self.on_load_failed)
         self.web_view.connect("load-changed", self.on_load_changed)
+        self.web_view.connect("mouse-target-changed", self.on_mouse_target_changed)
 
         self._update_sections()
 
@@ -139,6 +139,13 @@ class DocPage(Adw.Bin):
 
     def on_load_failed(self, web_view, load_event, failing_uri: str, error):
         print(error)
+
+    def on_mouse_target_changed(
+        self, web_view: WebKit.WebView, hit_test_result: WebKit.HitTestResult, *args
+    ):
+        uri = hit_test_result.get_link_uri()
+        if uri:
+            pass
 
     def setup_search_signals(self):
         self.search_bar.connect_entry(self.search_entry)

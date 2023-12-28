@@ -20,11 +20,6 @@
                   </object>
                 </property>
                 <child type="start">
-                  <object class="GtkButton">
-                    <property name="icon-name">window-new-symbolic</property>
-                  </object>
-                </child>
-                <child type="start">
                   <object class="GtkBox">
                     <child>
                       <object class="GtkButton">
