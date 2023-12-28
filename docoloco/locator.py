@@ -98,7 +98,7 @@ class Locator(Adw.Bin):
         pos = pos if pos else self.search_selection_model.get_selected()
         doc = self.search_result_model.get_item(pos)
 
-        variant = GLib.Variant.new_string(doc.path)
+        variant = GLib.Variant.new_string(doc.url)
         self.activate_action("win.open_page", variant)
         self.toggle_focus()
 
