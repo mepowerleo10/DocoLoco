@@ -5,8 +5,8 @@ import gi
 
 from ..config import default_config
 from ..registry import get_registry
-from .provider_widget import ProviderWidget
-from .providers_list_widget import ProvidersListWidget
+from .provider_page import ProviderPage
+from .providers_list_page import ProvidersListPage
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
@@ -25,15 +25,10 @@ class NewPage(Adw.Bin):
     def __init__(self):
         super().__init__()
 
-        page = Adw.NavigationPage()
-
-        providers_list = ProvidersListWidget(
+        providers_list_page = ProvidersListPage(
             get_registry().providers, self.open_provider_page
         )
-        page.set_child(providers_list)
-        page.set_title("Choose Provider")
-        page.bind_property("title", self, "title", GObject.BindingFlags.DEFAULT)
-        self.navigation_view.add(page)
+        self.navigation_view.add(providers_list_page)
 
     def filter_item(self, title: str):
         title = title.strip().lower()
@@ -45,10 +40,6 @@ class NewPage(Adw.Bin):
         self.flowbox.set_filter_func(filter_func, None)
 
     def open_provider_page(self, provider: DocumentationProvider):
-        page = Adw.NavigationPage()
-        provider_docs = ProviderWidget(provider, lambda _: self.navigation_view.pop())
-        page.set_title(provider.name)
-        page.set_child(provider_docs)
-        page.bind_property("title", self, "title", GObject.BindingFlags.DEFAULT)
+        provider_docs_page = ProviderPage(provider, lambda _: self.navigation_view.pop())
 
-        self.navigation_view.push(page)
+        self.navigation_view.push(provider_docs_page)

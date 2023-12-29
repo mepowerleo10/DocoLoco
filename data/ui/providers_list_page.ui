@@ -3,7 +3,7 @@
 <interface>
   <requires lib="gtk" version="4.0"/>
   <requires lib="libadwaita" version="1.4"/>
-  <template class="ProvidersListWidget" parent="AdwNavigationPage">
+  <template class="ProvidersListPage" parent="AdwNavigationPage">
     <child>
       <object class="GtkScrolledWindow">
         <child>

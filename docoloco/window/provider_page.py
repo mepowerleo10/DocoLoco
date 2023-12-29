@@ -11,9 +11,9 @@ gi.require_version("WebKit", "6.0")
 from gi.repository import Adw, GLib, Gtk  # noqa: E402
 
 
-@Gtk.Template(filename=default_config.ui("provider"))
-class ProviderWidget(Adw.Bin):
-    __gtype_name__ = "ProviderWidget"
+@Gtk.Template(filename=default_config.ui("provider_page"))
+class ProviderPage(Adw.NavigationPage):
+    __gtype_name__ = "ProviderPage"
 
     back_btn = cast(Gtk.Button, Gtk.Template.Child())
     title = cast(Gtk.Label, Gtk.Template.Child())
