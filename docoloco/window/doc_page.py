@@ -1,19 +1,20 @@
 import re
+from typing import cast
 from urllib.parse import unquote
 
-from .section_widget import SectionWidget
+from bs4 import BeautifulSoup
 
-from ..models import Section, DocSet
-
-from .new_page import NewPage
-from ..config import default_config
 import gi
-from typing import cast
+
+from ..config import default_config
+from ..models import DocSet, Section
+from .new_page import NewPage
+from .section_widget import SectionWidget
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 gi.require_version("WebKit", "6.0")
-from gi.repository import Adw, Gtk, Gio, GLib, GObject, WebKit  # noqa: E402
+from gi.repository import Adw, Gio, GLib, GObject, Gtk, WebKit  # noqa: E402
 
 
 @Gtk.Template(filename=default_config.ui("doc_page"))
@@ -42,6 +43,7 @@ class DocPage(Adw.Bin):
 
         self.web_view.connect("load-failed", self.on_load_failed)
         self.web_view.connect("load-changed", self.on_load_changed)
+        self.web_view.connect("mouse-target-changed", self.on_mouse_target_changed)
 
         self._update_sections()
 
@@ -50,6 +52,8 @@ class DocPage(Adw.Bin):
         elif docset:
             self.load_uri(docset.index_file_path.as_uri())
         else:
+            new_page = NewPage()
+            new_page.bind_property("title", self, "title", GObject.BindingFlags.DEFAULT)
             self.set_child(NewPage())
 
         self.web_view.bind_property(
@@ -135,10 +139,40 @@ class DocPage(Adw.Bin):
             case WebKit.LoadEvent.STARTED:
                 self.progress_bar.set_visible(True)
             case WebKit.LoadEvent.FINISHED:
+                mime_type = web_view.get_main_resource().get_response().get_mime_type()
+                if mime_type == "application/xhtml+xml":
+                    # TODO: Find a better way to handle WebKitGTK being unforgiving on rendering XML
+                    self.remove_xml_and_load_new_content(web_view)
+
                 self.progress_bar.set_visible(False)
+
+    def remove_xml_and_load_new_content(self, web_view):
+        current_uri: str = web_view.get_uri()
+        resource_path: str = current_uri.split("#")[0]
+        if resource_path.startswith("file://"):
+            resource_path = resource_path.replace("file://", "")
+            with open(resource_path, "r+") as resource:
+                soup = BeautifulSoup(resource, "html.parser")
+                for xml_tag in soup.find_all("xml"): # delete all xml tags if in document
+                    xml_tag.decompose() 
+
+                for element in soup.find_all("html"): # remove xml related attributes from the html tag
+                    element.attrs.pop("xmlns", None)
+                    element.attrs.pop("xml:lang", None)
+
+                web_view.load_alternate_html(str(soup), current_uri, current_uri)
+                
+                    
 
     def on_load_failed(self, web_view, load_event, failing_uri: str, error):
         print(error)
+
+    def on_mouse_target_changed(
+        self, web_view: WebKit.WebView, hit_test_result: WebKit.HitTestResult, *args
+    ):
+        uri = hit_test_result.get_link_uri()
+        if uri:
+            pass
 
     def setup_search_signals(self):
         self.search_bar.connect_entry(self.search_entry)

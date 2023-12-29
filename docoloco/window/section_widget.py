@@ -75,7 +75,7 @@ class SectionWidget(Adw.Bin):
 
         doc = cast(Doc, list_item.get_item())
         label.set_markup(
-            f"<a href='{html.escape(doc.path)}'>{html.escape(doc.name)}</a>"
+            f"<a href='{html.escape(doc.url)}'>{html.escape(doc.name)}</a>"
         )
         label.set_cursor(Gdk.Cursor.new_from_name("pointer"))
         label.set_margin_start(10)

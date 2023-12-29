@@ -8,7 +8,7 @@ from .registry import get_registry
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gdk, Gio, GLib, GObject, Gtk  # noqa: E402
+from gi.repository import Adw, Gio, GLib, GObject, Gtk  # noqa: E402
 
 
 @Gtk.Template(filename=default_config.ui("locator"))
@@ -53,6 +53,7 @@ class Locator(Adw.Bin):
             variant = GLib.Variant.new_string(name)
             menu.append(docset.title, f"win.change_docset({variant})")
         self.docset_btn.set_menu_model(menu)
+        self.docset_btn.connect("clicked", self.on_click_docset_btn)
 
     def setup_locator_entry(self, factory, obj: GObject.Object):
         list_item = cast(Gtk.ListItem, obj)
@@ -79,7 +80,7 @@ class Locator(Adw.Bin):
 
         if not (text or self.popover.is_visible()):
             return
-        
+
         if self.docset:
             results = self.docset.search(text)
             self.search_result_model.remove_all()
@@ -97,7 +98,7 @@ class Locator(Adw.Bin):
         pos = pos if pos else self.search_selection_model.get_selected()
         doc = self.search_result_model.get_item(pos)
 
-        variant = GLib.Variant.new_string(doc.path)
+        variant = GLib.Variant.new_string(doc.url)
         self.activate_action("win.open_page", variant)
         self.toggle_focus()
 
@@ -107,7 +108,9 @@ class Locator(Adw.Bin):
         if docset:
             self.docset_label.set_label(docset.title)
             self.docset_icon.set_from_gicon(docset.icon)
-            self.entry.set_placeholder_text("Press Ctrl+P to search sections and symbols")
+            self.entry.set_placeholder_text(
+                "Press Ctrl+P to search sections and symbols"
+            )
         else:
             self.docset_label.set_label("DocSet")
             self.docset_icon.set_from_icon_name("accessories-dictionary-symbolic")
@@ -119,3 +122,8 @@ class Locator(Adw.Bin):
         else:
             self.popover.set_visible(True)
             self.entry.grab_focus()
+
+    def on_click_docset_btn(self, *args):
+        if self.docset:
+            variant = GLib.Variant.new_string(self.docset.index_file_path.as_uri())
+            self.activate_action("win.open_page", variant)

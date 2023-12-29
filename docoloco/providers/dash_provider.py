@@ -1,7 +1,7 @@
 import json
 import plistlib
 import sqlite3
-from collections import namedtuple
+from collections import OrderedDict, namedtuple
 from enum import Enum
 from pathlib import Path
 from typing import Dict, List
@@ -23,6 +23,8 @@ class DashProvider(DocumentationProvider):
                 self.docs[doc.name] = doc
             except Exception as e:
                 print(e)
+
+        self.docs = OrderedDict(sorted(self.docs.items()))
 
 def namedtuple_factory(cursor: sqlite3.Cursor, row):
     fields = [column[0] for column in cursor.description]
@@ -88,7 +90,7 @@ class DashDocSet(DocSet):
 
         self.count_symbols()
 
-        self.populate_all_sections()
+        # self.populate_all_sections()
     
     def load_metadata(self):
         """Reads the meta.json file"""
@@ -208,7 +210,12 @@ class DashDocSet(DocSet):
 
             also_known_as_list = self.symbol_strings[name]
             like_conditions = [f"type LIKE '%{value}%'" for value in also_known_as_list]
-            query = f"SELECT name as name, type as type, path as path FROM {self.table_name} WHERE {"OR ".join(like_conditions)} LIMIT {page_size} OFFSET {offset}"
+
+            columns_to_select = "name as name, type as type, path as path"
+            if self.type != self.Type.DASH:
+                columns_to_select = f"{columns_to_select}, fragment as fragment"
+
+            query = f"SELECT {columns_to_select} FROM {self.table_name} WHERE {"OR ".join(like_conditions)} LIMIT {page_size} OFFSET {offset}"
             rows = self.con.cursor().execute(query)
 
             for row in rows.fetchall():
@@ -221,7 +228,11 @@ class DashDocSet(DocSet):
             self.sections[name] = section_index
 
     def search(self, value: str) -> List[Doc]:
-        query = f"SELECT name as name, type as type, path as path FROM {self.table_name} WHERE name LIKE '%{value}%' LIMIT 20"
+        columns_to_select = "name as name, type as type, path as path"
+        if self.type != self.Type.DASH:
+            columns_to_select = f"{columns_to_select}, fragment as fragment"
+            
+        query = f"SELECT {columns_to_select} FROM {self.table_name} WHERE name LIKE '%{value}%' LIMIT 20"
         rows: sqlite3.Cursor = self.con.cursor().execute(query)
 
         results: List[Doc] = []
@@ -234,6 +245,9 @@ class DashDocSet(DocSet):
     def build_doc_from_row(self, row):
         symbol_type = self.parse_symbol_type(row.type)
         doc = Doc(name=row.name, type=symbol_type, path=self.get_uri_to(row.path))
+        if self.type != self.Type.DASH:
+            doc.fragment = row.fragment
+
         return doc
 
     def get_uri_to(self, path: str) -> str:

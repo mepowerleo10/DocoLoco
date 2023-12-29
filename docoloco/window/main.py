@@ -183,6 +183,9 @@ class MainWindow(Adw.ApplicationWindow):
             return
 
         docset = get_registry().get(name.get_string())
+        if not docset.is_populated:
+            docset.populate_all_sections()
+
         self.locator.set_docset(docset)
         doc_page = DocPage(docset)
 

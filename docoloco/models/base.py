@@ -46,12 +46,36 @@ class Section(GObject.Object, Sectionable):
 
 
 class Doc(GObject.Object, Sectionable):
-    def __init__(self, name: str, type: str, path: str):
+    def __init__(self, name: str, type: str, path: str, fragment: str = None):
         super().__init__()
 
         self.name = name
         self.type = type
         self.path = path
+        self.fragment = fragment
+        self._url: str = None
+
+    @property
+    def url(self) -> str:
+        if not self._url:
+            real_path = None
+            real_fragment = None
+
+            if not self.fragment:
+                url_parts = self.path.split("#")
+                real_path = url_parts[0]
+                if len(url_parts) > 1:
+                    real_fragment = url_parts[1]
+            else:
+                real_path = self.path
+                real_fragment = self.fragment
+
+            self._url = real_path
+
+            if real_fragment:
+                self._url = f"{self._url}#{real_fragment}"
+
+        return self._url
 
     @property
     def icon_name(self) -> str:
@@ -226,9 +250,17 @@ class DocSet(GObject.Object):
         return Gio.ListStore(item_type=Doc)
 
     @property
+    def is_populated(self) -> bool:
+        return len(self.sections) > 0
+
+    @property
     def icon(self):
-        icon_path: Path = self.icon_files[0]
-        icon = Gio.FileIcon.new_for_string(icon_path.as_posix())
+        if self.icon_files:
+            icon_path: Path = self.icon_files[0]
+            icon = Gio.FileIcon.new_for_string(icon_path.as_posix())
+        else:
+            icon = Gio.icon_new_for_string("accessories-dictionary-symbolic")
+
         return icon
 
     @property
