@@ -31,13 +31,18 @@ class NewPage(Adw.Bin):
         self.navigation_view.add(providers_list_page)
 
     def filter_item(self, title: str):
+        page = self.navigation_view.get_visible_page()
+        if not isinstance(page, ProviderPage):
+            return
+        
         title = title.strip().lower()
 
         def filter_func(box: Gtk.FlowBoxChild, *args):
             label = box.get_child().get_child().get_last_child()
             return title in label.get_label().lower()
 
-        self.flowbox.set_filter_func(filter_func, None)
+        provider_docs_page = cast(ProviderPage, page)
+        provider_docs_page.docsets_box.set_filter_func(filter_func, None)
 
     def open_provider_page(self, provider: DocumentationProvider):
         provider_docs_page = ProviderPage(provider, lambda _: self.navigation_view.pop())

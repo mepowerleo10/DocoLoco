@@ -4,7 +4,7 @@ from typing import Dict, List
 from .models import Doc, DocSet
 from .providers.base import DocumentationProvider
 from .providers.dash_provider import DashProvider
-from .providers.man_provider import ManProvider, get_all_man_providers
+from .providers.man_provider import get_all_man_providers
 
 
 class Registry:

@@ -24,7 +24,7 @@ class ProviderPage(Adw.NavigationPage):
         provider: DocumentationProvider,
         on_back_callback: Callable[[None], None] = None,
     ):
-        super().__init__()
+        super().__init__(title=provider.name)
 
         self.provider = provider
         self.title.set_label(provider.name)
@@ -47,7 +47,7 @@ class ProviderPage(Adw.NavigationPage):
             button.set_child(box)
             self.docsets_box.append(button)
 
-        self.back_btn.connect("activate", self.on_click_back)
+        self.back_btn.connect("activate", lambda _: print("yes"))
 
     def on_click_back(self, *args):
         # TODO: Quite frankly do not know why this callback does not work, will check on it tommorow probably...
