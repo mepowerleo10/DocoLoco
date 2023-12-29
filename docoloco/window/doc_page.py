@@ -2,6 +2,8 @@ import re
 from typing import cast
 from urllib.parse import unquote
 
+from bs4 import BeautifulSoup
+
 import gi
 
 from ..config import default_config
@@ -137,7 +139,30 @@ class DocPage(Adw.Bin):
             case WebKit.LoadEvent.STARTED:
                 self.progress_bar.set_visible(True)
             case WebKit.LoadEvent.FINISHED:
+                mime_type = web_view.get_main_resource().get_response().get_mime_type()
+                if mime_type == "application/xhtml+xml":
+                    # TODO: Find a better way to handle WebKitGTK being unforgiving on rendering XML
+                    self.remove_xml_and_load_new_content(web_view)
+
                 self.progress_bar.set_visible(False)
+
+    def remove_xml_and_load_new_content(self, web_view):
+        current_uri: str = web_view.get_uri()
+        resource_path: str = current_uri.split("#")[0]
+        if resource_path.startswith("file://"):
+            resource_path = resource_path.replace("file://", "")
+            with open(resource_path, "r+") as resource:
+                soup = BeautifulSoup(resource, "html.parser")
+                for xml_tag in soup.find_all("xml"): # delete all xml tags if in document
+                    xml_tag.decompose() 
+
+                for element in soup.find_all("html"): # remove xml related attributes from the html tag
+                    element.attrs.pop("xmlns", None)
+                    element.attrs.pop("xml:lang", None)
+
+                web_view.load_alternate_html(str(soup), current_uri, current_uri)
+                
+                    
 
     def on_load_failed(self, web_view, load_event, failing_uri: str, error):
         print(error)
