@@ -1,4 +1,4 @@
-from typing import Callable, List, cast
+from typing import Callable, Dict, List, cast
 
 import gi
 
@@ -8,27 +8,26 @@ from ..providers.base import DocumentationProvider
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 gi.require_version("WebKit", "6.0")
-from gi.repository import Adw, GObject, Gtk  # noqa: E402
+from gi.repository import Adw, Gtk  # noqa: E402
 
 
-@Gtk.Template(filename=default_config.ui("providers_list"))
-class ProvidersListWidget(Adw.NavigationPage):
-    __gtype_name__ = "ProvidersListWidget"
+@Gtk.Template(filename=default_config.ui("providers_list_page"))
+class ProvidersListPage(Adw.NavigationPage):
+    __gtype_name__ = "ProvidersListPage"
 
     providers_list_box = cast(Gtk.ListBox, Gtk.Template.Child())
-    title = GObject.Property(type=str, default="Providers")
 
     def __init__(
         self,
-        providers: List[DocumentationProvider],
+        providers: Dict[str, DocumentationProvider],
         on_activate_row: Callable[[DocumentationProvider], None],
     ):
-        super().__init__(title=self.title)
+        super().__init__(title="Providers")
         self.on_activate_callback = on_activate_row
 
-        for provider in providers:
+        for name, provider in providers.items():
             action_row = Adw.ActionRow()
-            action_row.set_title(provider.name)
+            action_row.set_title(name)
             action_row.set_icon_name("accessories-dictionary-symbolic")
 
             button = Gtk.Button()

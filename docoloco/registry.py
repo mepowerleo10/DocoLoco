@@ -1,29 +1,29 @@
-from collections import OrderedDict
 from typing import Dict, List
 
 from .models import Doc, DocSet
 from .providers.base import DocumentationProvider
 from .providers.dash_provider import DashProvider
-from .providers.man_provider import ManProvider, get_all_man_providers
+from .providers.man_provider import ManProvider
 
 
 class Registry:
-    providers: List[DocumentationProvider] = [
-        DashProvider(),
-    ]
+    providers: Dict[str, DocumentationProvider] = dict()
     entries: Dict[str, DocSet] = dict()
 
     def __init__(self) -> None:
-        self.providers.extend(get_all_man_providers())
+        registerd_providers: List[DocumentationProvider] = [
+            DashProvider(),
+            ManProvider(),
+        ]
+
+        for provider in registerd_providers:
+            self.providers[provider.name] = provider
 
         self.initialize_providers()
 
     def initialize_providers(self):
-        for provider in self.providers:
+        for _, provider in self.providers.items():
             provider.load()
-
-            sorted_docs = OrderedDict(sorted(provider.docs.items()))
-            self.entries |= sorted_docs
 
     def search(self, term: str) -> List[Doc]:
         results: List[Doc] = list()
@@ -33,8 +33,9 @@ class Registry:
 
         return results
 
-    def get(self, key: str) -> DocSet:
-        return self.entries.get(key)
+    def get(self, provider_id: str, docset_name: str, position: int) -> DocSet:
+        provider = self.providers.get(provider_id)
+        return provider.get(name=docset_name, position=position)
 
 
 registry = Registry()

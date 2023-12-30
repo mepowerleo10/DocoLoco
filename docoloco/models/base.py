@@ -88,6 +88,7 @@ class DocSet(GObject.Object):
     dir: Path = None
     name: str = None
     title: str = None
+    description: str = None
     version: str = None
     index_file_path: Path = None
     is_javascript_enabled = True

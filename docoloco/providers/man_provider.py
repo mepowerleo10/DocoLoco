@@ -5,58 +5,71 @@ from typing import Dict, List
 
 from bs4 import BeautifulSoup
 
-from ..models.base import Doc
-
 from ..models import DocSet
+from ..models.base import Doc
 from .base import DocumentationProvider
 
 
 class ManProvider(DocumentationProvider):
-    def __init__(self, name: str, path: Path) -> None:
+    def __init__(self) -> None:
         super().__init__()
-        self.name = name
-        self.root_path = path
+        self.name = "Man Pages"
+        self.type = DocumentationProvider.Type.QUERYABLE
 
-    def load(self) -> None:
-        count = 0
-        for path in self.root_path.glob("*"):
-            try:
-                count += 1
-                doc = ManDocSet(path)
-                self.docs[doc.name] = doc
+    def query(self, name: str) -> List[DocSet]:
+        self.query_results_model.remove_all()
 
-                if count > 20:
-                    break
+        process = subprocess.Popen(["man","-k", name], stdout=subprocess.PIPE, stderr=subprocess.PIPE,)
+        output, error = process.communicate()
 
-            except Exception as e:
-                print(e)
+        if process.returncode == 0:
+            output_lines = output.decode().splitlines()[:100]
+            for line in output_lines:
+                parts = line.split("(")
+                name = parts[0].strip()
 
+                doc = ManDocSet(name=name, description=line)
+                self.query_results_model.append(doc)
+        else:
+            print(error.decode())
 
+    
 class ManDocSet(DocSet):
     __gtype_name__ = "ManDocSet"
 
-    def __init__(self, path: Path):
+    def __init__(self, name: str, description: str):
         super().__init__()
 
-        self.dir = path.parent
-        self.path = path
+        self.name = self.title = name
+        self.description = description
+        self.path: Path = None
 
-        if not self.dir.exists():
-            raise ValueError(f"Docset path {self.dir} does not exist")
-
-        self.name = self.title = path.stem
 
     def populate_all_sections(self) -> None:
-        self.cache_directory = Path.home() / ".cache/DocoLoco/ManPages" / self.dir.name
-        self.cache_directory.mkdir(parents=True, exist_ok=True)
-
-        self.index_file_path = self.cache_directory / f"{self.name}.html"
-        self.metadata_path = self.cache_directory / f"{self.index_file_path.stem}.metadata.json"
+        self.set_paths()
 
         if not self.index_file_path.exists():
             self.build_manpage_metadata()
         
         self.load_symbols()
+
+    def set_paths(self):
+        process = subprocess.Popen(["man", "-w", self.name], stdout=subprocess.PIPE, stderr=subprocess.PIPE,)
+        output, error = process.communicate()
+
+        if process.returncode == 0:
+            self.path = Path(output.decode().strip())
+            self.dir = self.path.parent
+
+            self.cache_directory = Path.home() / ".cache/DocoLoco/ManPages" / self.dir.name
+            self.cache_directory.mkdir(parents=True, exist_ok=True)
+
+            self.index_file_path = self.cache_directory / f"{self.name}.html"
+            self.metadata_path = self.cache_directory / f"{self.index_file_path.stem}.metadata.json"
+        else:
+            print(error.decode())
+
+
 
     def load_symbols(self):
         with open(self.metadata_path, "r") as metadata_file:
@@ -101,18 +114,3 @@ class ManDocSet(DocSet):
         
         with open(self.metadata_path, "w") as metadata_file:
             json.dump(symbols, metadata_file)
-        
-
-def get_all_man_providers() -> List[ManProvider]:
-    man_pages_path = Path("/usr/share/man")
-    man_sections = {
-        1: "Executable Programs or Shell Programs",
-        2: "System Calls",
-    }
-
-    providers = []
-    for index, name in man_sections.items():
-        provider = ManProvider(name, man_pages_path / f"man{index}/")
-        providers.append(provider)
-
-    return providers
