@@ -42,7 +42,8 @@ class NewPage(Adw.Bin):
             return title in label.get_label().lower()
 
         provider_docs_page = cast(ProviderPage, page)
-        provider_docs_page.docsets_box.set_filter_func(filter_func, None)
+        # provider_docs_page.docsets_box.set_filter_func(filter_func, None)
+        provider_docs_page.filter_or_find(title, filter_func)
 
     def open_provider_page(self, provider: DocumentationProvider):
         provider_docs_page = ProviderPage(provider, lambda _: self.navigation_view.pop())

@@ -1,4 +1,4 @@
-from typing import Callable, List, cast
+from typing import Callable, Dict, List, cast
 
 import gi
 
@@ -19,15 +19,15 @@ class ProvidersListPage(Adw.NavigationPage):
 
     def __init__(
         self,
-        providers: List[DocumentationProvider],
+        providers: Dict[str, DocumentationProvider],
         on_activate_row: Callable[[DocumentationProvider], None],
     ):
         super().__init__(title="Providers")
         self.on_activate_callback = on_activate_row
 
-        for provider in providers:
+        for name, provider in providers.items():
             action_row = Adw.ActionRow()
-            action_row.set_title(provider.name)
+            action_row.set_title(name)
             action_row.set_icon_name("accessories-dictionary-symbolic")
 
             button = Gtk.Button()

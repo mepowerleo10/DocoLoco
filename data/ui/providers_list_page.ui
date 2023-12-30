@@ -9,7 +9,7 @@
         <child>
           <object class="AdwClamp">
             <property name="hexpand">True</property>
-            <property name="maximum-size">-1</property>
+            <property name="maximum-size">1000</property>
             <property name="vexpand">True</property>
             <child>
               <object class="GtkBox">

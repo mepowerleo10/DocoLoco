@@ -3,7 +3,7 @@
 <interface>
   <!-- interface-name provider.ui -->
   <requires lib="gtk" version="4.12"/>
-  <requires lib="libadwaita" version="1.0"/>
+  <requires lib="libadwaita" version="1.4"/>
   <template class="ProviderPage" parent="AdwNavigationPage">
     <property name="child">
       <object class="AdwBin">
@@ -13,7 +13,7 @@
               <object class="AdwClamp">
                 <property name="maximum-size">1000</property>
                 <child>
-                  <object class="GtkBox">
+                  <object class="GtkBox" id="contents_box">
                     <property name="margin-top">20</property>
                     <property name="orientation">vertical</property>
                     <property name="spacing">20</property>
