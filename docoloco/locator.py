@@ -98,6 +98,9 @@ class Locator(Adw.Bin):
         pos = pos if pos else self.search_selection_model.get_selected()
         doc = self.search_result_model.get_item(pos)
 
+        if not doc:
+            return
+
         variant = GLib.Variant.new_string(doc.url)
         self.activate_action("win.open_page", variant)
         self.toggle_focus()
@@ -120,7 +123,9 @@ class Locator(Adw.Bin):
         if self.popover.get_visible():
             self.popover.set_visible(False)
         else:
-            self.popover.set_visible(True)
+            if self.docset:
+                self.popover.set_visible(True)
+
             self.entry.grab_focus()
 
     def on_click_docset_btn(self, *args):
