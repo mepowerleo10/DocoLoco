@@ -105,7 +105,7 @@ class MainWindow(Adw.ApplicationWindow):
         self.add_action(g_action)
 
         g_action = Gio.SimpleAction(
-            name="change_docset", parameter_type=GLib.VariantType.new("s")
+            name="change_docset", parameter_type=GLib.VariantType.new("(ssi)")
         )
         g_action.connect("activate", self.change_docset)
         self.add_action(g_action)
@@ -178,11 +178,12 @@ class MainWindow(Adw.ApplicationWindow):
 
         self.selected_doc_page.filter_docset(name.get_string())
 
-    def change_docset(self, action=None, name: GLib.Variant = None):
-        if not name:
+    def change_docset(self, action, parameters):
+        if not (parameters or action):
             return
 
-        docset = get_registry().get(name.get_string())
+        provider_id, docset_name, position = parameters.unpack()
+        docset = get_registry().get(provider_id, docset_name, position)
         if not docset.is_populated:
             docset.populate_all_sections()
 
