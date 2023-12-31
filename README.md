@@ -6,6 +6,7 @@ DocoLoco is a versatile documentation browser that utilizes documentation sets p
 
 ## Table of Contents
 
+- [Preview](#preview)
 - [Installation](#installation)
 - [Running the Project](#running-the-project)
 - [Linux Dependencies](#linux-dependencies)
@@ -15,14 +16,17 @@ DocoLoco is a versatile documentation browser that utilizes documentation sets p
 
 Here are some preview images of DocoLoco in action:
 
-| Homepage                              | Documentation                                       | Tabs Overview                                   |
-| ------------------------------------- | --------------------------------------------------- | ----------------------------------------------- |
-| ![Homepage](screenshots/homepage.png)| ![Documentation Page](screenshots/documentation.png) | ![Tabs Overview](screenshots/tabs-overview.png) |
+| Homepage                              | Documentation                                        | Tabs Overview                                   |
+| ------------------------------------- | ---------------------------------------------------- | ----------------------------------------------- |
+| ![Homepage](screenshots/homepage.png) | ![Documentation Page](screenshots/documentation.png) | ![Tabs Overview](screenshots/tabs-overview.png) |
 
-| Search | Dash DocSets  | Man Pages |
-|---|----------| -----------|
-| ![Search](screenshots/search.png)| ![Dash DocSets](screenshots/dash-docs.png) |![Man Pages](screenshots/man-pages.png)
+| Search                            | Dash DocSets                               | Man Pages                               |
+| --------------------------------- | ------------------------------------------ | --------------------------------------- |
+| ![Search](screenshots/search.png) | ![Dash DocSets](screenshots/dash-docs.png) | ![Man Pages](screenshots/man-pages.png) |
 
+| Browsing Man Pages               |
+| -------------------------------- |
+| ![Browsing Man Pages](screenshots/browsing-man-pages.png) |
 
 ## Installation
 
@@ -131,6 +135,7 @@ This will create the required files for GTK4 completion in your development envi
 If you would like to contribute to DocoLoco, please follow our [Contribution Guidelines](CONTRIBUTING.md).
 
 ## Thanks To
+
 [RTFM by @hugopol](https://github.com/hugopl/rtfm) for the inspiration and serving as the basis for understanding the structure of a GTK application.
 
 ## License
