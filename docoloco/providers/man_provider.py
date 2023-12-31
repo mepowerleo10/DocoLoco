@@ -5,6 +5,8 @@ from typing import Dict, List
 
 from bs4 import BeautifulSoup
 
+from gi.repository.Gio import ListStore
+
 from ..models import DocSet
 from ..models.base import Doc
 from .base import DocumentationProvider
@@ -43,6 +45,7 @@ class ManDocSet(DocSet):
         self.name = self.title = name
         self.description = description
         self.path: Path = None
+        self.related_docs = self.new_docs_list()
 
 
     def populate_all_sections(self) -> None:
@@ -74,16 +77,10 @@ class ManDocSet(DocSet):
     def load_symbols(self):
         with open(self.metadata_path, "r") as metadata_file:
             metadata: Dict = json.load(metadata_file)
-
             type = "Section"
-            self.symbol_counts[type] = len(metadata.keys())
-
-            section_items = self.new_docs_list()
             for name, path in metadata.items():
                 doc = Doc(name, type, path)
-                section_items.append(doc)
-            
-            self.sections[type] = section_items
+                self.related_docs.append(doc)
 
     def build_manpage_metadata(self):
         process = subprocess.Popen(
@@ -114,3 +111,6 @@ class ManDocSet(DocSet):
         
         with open(self.metadata_path, "w") as metadata_file:
             json.dump(symbols, metadata_file)
+
+    def related_docs_of(self, url: str) -> ListStore:
+        return self.related_docs
