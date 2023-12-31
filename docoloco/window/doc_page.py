@@ -52,7 +52,7 @@ class DocPage(Adw.Bin):
 
         self.related_docs: Gio.ListStore = Gio.ListStore()
 
-        self._update_sections()
+        self._create_symbols_sections()
         self._create_related_links_frame()
 
         if uri:
@@ -77,8 +77,8 @@ class DocPage(Adw.Bin):
             GObject.BindingFlags.BIDIRECTIONAL,
         )
 
-    def _update_sections(self):
-        if not self.docset:
+    def _create_symbols_sections(self):
+        if not self.docset or len(self.docset.sections) == 0:
             return
 
         sections_list_store = Gio.ListStore(item_type=Section)
