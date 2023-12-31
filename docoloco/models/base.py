@@ -247,6 +247,9 @@ class DocSet(GObject.Object):
 
         return aliases.get(value, value)
 
+    def related_docs_of(self, url: str) -> Gio.ListStore:
+        ...
+
     def new_docs_list(self) -> Gio.ListStore:
         return Gio.ListStore(item_type=Doc)
 

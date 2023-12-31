@@ -6,6 +6,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Dict, List
 
+from gi.repository.Gio import ListStore
+
 from ..models import Doc, DocSet
 from .base import DocumentationProvider
 
@@ -211,9 +213,7 @@ class DashDocSet(DocSet):
             also_known_as_list = self.symbol_strings[name]
             like_conditions = [f"type LIKE '%{value}%'" for value in also_known_as_list]
 
-            columns_to_select = "name as name, type as type, path as path"
-            if self.type != self.Type.DASH:
-                columns_to_select = f"{columns_to_select}, fragment as fragment"
+            columns_to_select = self.get_columns()
 
             query = f"SELECT {columns_to_select} FROM {self.table_name} WHERE {"OR ".join(like_conditions)} LIMIT {page_size} OFFSET {offset}"
             rows = self.con.cursor().execute(query)
@@ -227,10 +227,9 @@ class DashDocSet(DocSet):
 
             self.sections[name] = section_index
 
+    
     def search(self, value: str) -> List[Doc]:
-        columns_to_select = "name as name, type as type, path as path"
-        if self.type != self.Type.DASH:
-            columns_to_select = f"{columns_to_select}, fragment as fragment"
+        columns_to_select = self.get_columns()
             
         query = f"SELECT {columns_to_select} FROM {self.table_name} WHERE name LIKE '%{value}%' LIMIT 20"
         rows: sqlite3.Cursor = self.con.cursor().execute(query)
@@ -241,6 +240,33 @@ class DashDocSet(DocSet):
             results.append(doc)
 
         return results
+    
+    def related_docs_of(self, url: str) -> ListStore:
+        path = url.replace(f"{self.documents_dir.as_uri()}/", "").split("#")[0]
+        columns_to_select = self.get_columns()
+
+        if self.type == self.Type.DASH:
+            where_condition = f"path LIKE '%{path}%' AND path <> '%{path}'"
+        else:
+            where_condition = f"path LIKE '%{path}' AND fragment IS NOT NULL"
+        
+        query = f"SELECT {columns_to_select} FROM {self.table_name} WHERE {where_condition}"
+        rows = self.con.cursor().execute(query)
+
+        related_links = self.new_docs_list()
+        for row in rows.fetchall():
+            doc = self.build_doc_from_row(row)
+            related_links.append(doc)
+
+        return related_links
+
+    
+    def get_columns(self):
+        columns_to_select = "name as name, type as type, path as path"
+        if self.type != self.Type.DASH:
+            columns_to_select = f"{columns_to_select}, fragment as fragment"
+        return columns_to_select
+
     
     def build_doc_from_row(self, row):
         symbol_type = self.parse_symbol_type(row.type)

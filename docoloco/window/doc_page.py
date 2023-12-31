@@ -1,20 +1,22 @@
+import html
 import re
 from typing import cast
 from urllib.parse import unquote
 
+import gi
 from bs4 import BeautifulSoup
 
-import gi
-
 from ..config import default_config
+from ..helpers import add_symmetric_margins
 from ..models import DocSet, Section
+from ..models.base import Doc
 from .new_page import NewPage
 from .section_widget import SectionWidget
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 gi.require_version("WebKit", "6.0")
-from gi.repository import Adw, Gio, GLib, GObject, Gtk, WebKit  # noqa: E402
+from gi.repository import Adw, Gdk, Gio, GLib, GObject, Gtk, Pango, WebKit  # noqa: E402
 
 
 @Gtk.Template(filename=default_config.ui("doc_page"))
@@ -45,7 +47,13 @@ class DocPage(Adw.Bin):
         self.web_view.connect("load-changed", self.on_load_changed)
         self.web_view.connect("mouse-target-changed", self.on_mouse_target_changed)
 
+        self.paned = Gtk.Paned(orientation=Gtk.Orientation.VERTICAL)
+        self.sidebar.append(self.paned)
+
+        self.related_docs: Gio.ListStore = Gio.ListStore()
+
         self._update_sections()
+        self._create_related_links_frame()
 
         if uri:
             self.load_uri(uri)
@@ -91,7 +99,13 @@ class DocPage(Adw.Bin):
         scrolled_window = Gtk.ScrolledWindow()
         scrolled_window.set_child(sections_tree)
         scrolled_window.set_vexpand(True)
-        self.sidebar.append(scrolled_window)
+
+        symbols_frame = Gtk.Frame()
+        symbols_frame.set_label("Symbols")
+        symbols_frame.set_child(scrolled_window)
+        add_symmetric_margins(symbols_frame, vertical=4, horizontal=4)
+
+        self.paned.set_start_child(symbols_frame)
 
     def _setup_sections(self, factory, obj: GObject.Object):
         list_item = cast(Gtk.ListItem, obj)
@@ -105,6 +119,65 @@ class DocPage(Adw.Bin):
         widget.build_with(section, self.docset)
 
     def on_item_clicked(self, label: Gtk.Label, path: str, *args):
+        label.stop_emission_by_name("activate-link")
+        variant = GLib.Variant.new_string(path)
+        self.activate_action("win.open_page", variant)
+
+    def _create_related_links_frame(self):
+        view_factory = Gtk.SignalListItemFactory()
+        view_factory.connect("setup", self._setup_related_link)
+        view_factory.connect("bind", self._bind_related_link)
+
+        list_selection_model = Gtk.SingleSelection(model=self.related_docs)
+
+        related_links_list = Gtk.ListView()
+        related_links_list.set_model(list_selection_model)
+        related_links_list.set_factory(view_factory)
+
+        scrolled_window = Gtk.ScrolledWindow()
+        scrolled_window.set_child(related_links_list)
+        scrolled_window.set_vexpand(True)
+
+        related_links_frame = Gtk.Frame()
+        related_links_frame.set_label("Related Links")
+        related_links_frame.set_child(scrolled_window)
+        add_symmetric_margins(related_links_frame, vertical=4, horizontal=4)
+
+        self.paned.set_end_child(related_links_frame)
+
+    def _setup_related_link(self, factory, obj):
+        list_item = cast(Gtk.ListItem, obj)
+        box = Gtk.Box()
+        icon = Gtk.Image()
+        label = Gtk.Label()
+
+        box.append(icon)
+        box.append(label)
+        list_item.set_child(box)
+
+    def _bind_related_link(self, factory, obj):
+        list_item = cast(Gtk.ListItem, obj)
+        box = cast(Gtk.Box, list_item.get_child())
+        icon = cast(Gtk.Image, box.get_first_child())
+        label = cast(Gtk.Label, box.get_last_child())
+
+        doc = cast(Doc, list_item.get_item())
+        label.set_markup(
+            f"<a href='{html.escape(doc.url)}'>{html.escape(doc.name)}</a>"
+        )
+        label.set_cursor(Gdk.Cursor.new_from_name("pointer"))
+        label.set_margin_start(10)
+        label.set_ellipsize(Pango.EllipsizeMode.END)
+        label.set_tooltip_text(doc.name)
+
+        label.connect("activate-link", self._on_related_link_clicked)
+        label.connect("activate-current-link", self._on_related_link_clicked)
+
+        box.append(icon)
+        box.append(label)
+        list_item.set_child(box)
+
+    def _on_related_link_clicked(self, label: Gtk.Label, path: str, *args):
         label.stop_emission_by_name("activate-link")
         variant = GLib.Variant.new_string(path)
         self.activate_action("win.open_page", variant)
@@ -146,6 +219,10 @@ class DocPage(Adw.Bin):
 
                 self.progress_bar.set_visible(False)
 
+                self.related_docs.remove_all()
+                for doc in self.docset.related_docs_of(web_view.get_uri()):
+                    self.related_docs.append(doc)
+
     def remove_xml_and_load_new_content(self, web_view):
         current_uri: str = web_view.get_uri()
         resource_path: str = current_uri.split("#")[0]
@@ -153,16 +230,18 @@ class DocPage(Adw.Bin):
             resource_path = resource_path.replace("file://", "")
             with open(resource_path, "r+") as resource:
                 soup = BeautifulSoup(resource, "html.parser")
-                for xml_tag in soup.find_all("xml"): # delete all xml tags if in document
-                    xml_tag.decompose() 
+                for xml_tag in soup.find_all(
+                    "xml"
+                ):  # delete all xml tags if in document
+                    xml_tag.decompose()
 
-                for element in soup.find_all("html"): # remove xml related attributes from the html tag
+                for element in soup.find_all(
+                    "html"
+                ):  # remove xml related attributes from the html tag
                     element.attrs.pop("xmlns", None)
                     element.attrs.pop("xml:lang", None)
 
                 web_view.load_alternate_html(str(soup), current_uri, current_uri)
-                
-                    
 
     def on_load_failed(self, web_view, load_event, failing_uri: str, error):
         print(error)
