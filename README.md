@@ -1,6 +1,8 @@
-# DocoLoco
+# DocoLoco: ZealDocs and Man pages browser
 
-DocoLoco is a documentation browser that utilizes documentation sets provided by Zeal Docs. Please note that Zeal must be installed to use DocoLoco.
+![License](https://img.shields.io/badge/License-MIT-blue.svg)
+
+DocoLoco is a versatile documentation browser that utilizes documentation sets provided by Zeal Docs and also allows browsing Linux Man pages. Please note that Zeal must be installed to use DocoLoco.
 
 ## Table of Contents
 
@@ -15,7 +17,11 @@ Here are some preview images of DocoLoco in action:
 
 | Homepage                              | Documentation                                       | Tabs Overview                                   |
 | ------------------------------------- | --------------------------------------------------- | ----------------------------------------------- |
-| ![Homepage](screenshots/homepage.png) | ![Documatation Page](screenshots/documentation.png) | ![Tabs Overview](screenshots/tabs-overview.png) |
+| ![Homepage](screenshots/homepage.png)| ![Documentation Page](screenshots/documentation.png) | ![Tabs Overview](screenshots/tabs-overview.png) |
+
+| Search | Dash DocSets  | Man Pages |
+|---|----------| -----------|
+| ![Search](screenshots/search.png)| ![Dash DocSets](screenshots/dash-docs.png) |![Man Pages](screenshots/man-pages.png)
 
 
 ## Installation
@@ -80,7 +86,7 @@ Now that you have the project and its dependencies installed, you can run DocoLo
 
 ## Linux Dependencies
 
-If you are on a Linux system, make sure you have the GTK4 development libraries installed. You can install them using the package manager for your distribution:
+If you are on a Linux system, make sure you have the GTK4 development libraries installed. The application also uses `mandoc` to parse and generate HTML pages for manpages. You can install them using the package manager for your distribution:
 
 - **Ubuntu/Debian:**
 
