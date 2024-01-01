@@ -15,7 +15,7 @@ from .section_widget import SectionWidget
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-gi.require_version("WebKit", "6.0")
+gi.require_version("WebKit2", "4.1")
 from gi.repository import Adw, Gdk, Gio, GLib, GObject, Gtk, Pango, WebKit  # noqa: E402
 
 
@@ -46,6 +46,7 @@ class DocPage(Adw.Bin):
         self.web_view.connect("load-failed", self.on_load_failed)
         self.web_view.connect("load-changed", self.on_load_changed)
         self.web_view.connect("mouse-target-changed", self.on_mouse_target_changed)
+        self.web_view.connect("context-menu", self.on_context_menu)
 
         self.paned = Gtk.Paned(orientation=Gtk.Orientation.VERTICAL)
         self.sidebar.append(self.paned)
@@ -252,6 +253,29 @@ class DocPage(Adw.Bin):
         uri = hit_test_result.get_link_uri()
         if uri:
             pass
+
+    def on_context_menu(
+        self,
+        web_view: WebKit.WebView,
+        context_menu: WebKit.ContextMenu,
+        hit_test_result: WebKit.HitTestResult,
+    ):
+        if hit_test_result.context_is_link():
+            action = Gio.SimpleAction(
+                name="open_in_new_tab", parameter_type=GLib.VariantType.new("s")
+            )
+            action.connect("activate", self._on_open_in_new_tab)
+            open_in_new_tab_item = WebKit.ContextMenuItem.new_from_gaction(
+                action, "Open In New Tab", GLib.Variant.new_string(hit_test_result.get_link_uri())
+            )
+            context_menu.remove(context_menu.get_item_at_position(1)) # Remove the 'Open in New Window' action
+            context_menu.remove(context_menu.get_item_at_position(1)) # Remove the 'Download Linked File' action
+            context_menu.insert(open_in_new_tab_item, 1)
+
+    def _on_open_in_new_tab(self, action, url):
+        self.activate_action("win.new_tab")
+        self.activate_action("win.change_docset", GLib.Variant("(ssi)", (self.docset.provider_id, self.docset.name, 0)))
+        self.activate_action("win.open_page", url)
 
     def setup_search_signals(self):
         self.search_bar.connect_entry(self.search_entry)
