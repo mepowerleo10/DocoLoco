@@ -133,6 +133,7 @@ class MainWindow(Adw.ApplicationWindow):
             page = self.tab_view.append(doc_page)
 
         doc_page.bind_property("title", page, "title", GObject.BindingFlags.DEFAULT)
+        page.set_title(doc_page.title)
         page.connect("notify::title", self.on_page_title_changed)
         page.set_live_thumbnail(True)
         self.tab_view.set_selected_page(page)

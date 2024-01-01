@@ -1,4 +1,4 @@
-from typing import Callable, Dict, List, cast
+from typing import Callable, Dict, cast
 
 import gi
 

@@ -62,8 +62,8 @@ class DocPage(Adw.Bin):
             self.load_uri(docset.index_file_path.as_uri())
         else:
             new_page = NewPage()
-            new_page.bind_property("title", self, "title", GObject.BindingFlags.DEFAULT)
-            self.set_child(NewPage())
+            # new_page.bind_property("title", self, "title", GObject.BindingFlags.DEFAULT)
+            self.set_child(new_page)
 
         self.web_view.bind_property(
             "estimated-load-progress",
