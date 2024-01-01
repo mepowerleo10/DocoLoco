@@ -1,4 +1,3 @@
-from turtle import position
 from typing import Callable, cast
 
 import gi
@@ -45,7 +44,8 @@ class ProviderPage(Adw.NavigationPage):
 
             self.build_query_results_section()
 
-        self.back_btn.connect("activate", lambda _: print("yes"))  # TODO: Quite frankly do not know why this callback does not work..
+        self.back_btn.connect("activate", self.on_click_back) 
+        self.back_btn.connect("clicked", self.on_click_back, on_back_callback) # 'activate' does not work...
 
     def create_status_page(self):
         self.status_page = Adw.StatusPage()
@@ -114,9 +114,9 @@ class ProviderPage(Adw.NavigationPage):
         action_params = GLib.Variant("(ssi)", (self.provider.name, doc.name, pos))
         self.activate_action("win.change_docset", action_params)
 
-
-    def on_click_back(self, *args):
-        pass
+    def on_click_back(self, button, callback: Callable[[None], None] = None):
+        if callback:
+            callback()
 
     def _on_query_list_model_items_changed(self, model: Gio.ListStore, *args):
         if model.get_n_items() == 0:

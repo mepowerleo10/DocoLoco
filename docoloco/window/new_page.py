@@ -23,7 +23,7 @@ class NewPage(Adw.Bin):
         super().__init__()
 
         providers_list_page = ProvidersListPage(
-            get_registry().providers, self.open_provider_page
+            providers=get_registry().providers, on_activate_row=self.open_provider_page
         )
         self.navigation_view.add(providers_list_page)
 
@@ -44,7 +44,7 @@ class NewPage(Adw.Bin):
 
     def open_provider_page(self, provider: DocumentationProvider):
         provider_docs_page = ProviderPage(
-            provider, lambda _: self.navigation_view.pop()
+            provider, lambda: self.navigation_view.pop()
         )
 
         self.navigation_view.push(provider_docs_page)
