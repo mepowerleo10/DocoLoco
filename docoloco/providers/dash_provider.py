@@ -21,7 +21,7 @@ class DashProvider(DocumentationProvider):
     def load(self):
         for doc_path in self.root_path.iterdir():
             try:
-                doc = DashDocSet(path=doc_path)
+                doc = DashDocSet(provider_id=self.name, path=doc_path)
                 self.docs[doc.name] = doc
             except Exception as e:
                 print(e)
@@ -52,8 +52,8 @@ class DashDocSet(DocSet):
         ZDASH = 2
         INVALID = 3
 
-    def __init__(self, path: Path) -> None:
-        super().__init__()
+    def __init__(self, provider_id: str, path: Path) -> None:
+        super().__init__(provider_id)
         
         self.dir = path
         if not self.dir.exists():

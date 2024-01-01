@@ -30,7 +30,7 @@ class ManProvider(DocumentationProvider):
                 parts = line.split("(")
                 name = parts[0].strip()
 
-                doc = ManDocSet(name=name, description=line)
+                doc = ManDocSet(provider_id=self.name, name=name, description=line)
                 self.query_results_model.append(doc)
         else:
             print(error.decode())
@@ -39,8 +39,8 @@ class ManProvider(DocumentationProvider):
 class ManDocSet(DocSet):
     __gtype_name__ = "ManDocSet"
 
-    def __init__(self, name: str, description: str):
-        super().__init__()
+    def __init__(self, provider_id: str, name: str, description: str):
+        super().__init__(provider_id)
 
         self.name = self.title = name
         self.description = description
