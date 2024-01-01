@@ -94,9 +94,10 @@ class DocSet(GObject.Object):
     is_javascript_enabled = True
     icon_files: List[Path] = None
 
-    def __init__(self):
+    def __init__(self, provider_id: str):
         super().__init__()
 
+        self.provider_id = provider_id
         self.keywords: Set[str] = set()
         self.symbol_strings: Dict[str, List] = dict()
         self.symbol_counts: Dict[str, int] = dict()
