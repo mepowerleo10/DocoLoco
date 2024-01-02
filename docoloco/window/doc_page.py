@@ -185,8 +185,8 @@ class DocPage(Adw.Bin):
 
     def load_uri(self, uri: str):
         self.setup_search_signals()
-        uri = unquote(uri)
         uri = self.clean_uri(uri)
+        uri = unquote(uri)
 
         self.web_view.load_uri(uri)
         self.web_view.bind_property(

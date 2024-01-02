@@ -1,4 +1,5 @@
 import json
+from shutil import copyfile
 import subprocess
 from pathlib import Path
 from typing import Dict, List
@@ -10,6 +11,8 @@ from gi.repository.Gio import ListStore
 from ..models import DocSet
 from ..models.base import Doc
 from .base import DocumentationProvider
+
+from ..config import default_config
 
 
 class ManProvider(DocumentationProvider):
@@ -46,6 +49,13 @@ class ManDocSet(DocSet):
         self.description = description
         self.path: Path = None
         self.related_docs = self.new_docs_list()
+        self.cache_dir = Path.home() / ".cache/DocoLoco/ManPages"
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
+
+        self.style_file = self.cache_dir / "style.css"
+        if not self.style_file.exists():
+            copyfile(default_config.get_path_from_data("mandoc.css"), self.style_file)
+
 
 
     def populate_all_sections(self) -> None:
@@ -64,11 +74,11 @@ class ManDocSet(DocSet):
             self.path = Path(output.decode().strip())
             self.dir = self.path.parent
 
-            self.cache_directory = Path.home() / ".cache/DocoLoco/ManPages" / self.dir.name
-            self.cache_directory.mkdir(parents=True, exist_ok=True)
+            self.dir = self.cache_dir / self.dir.name
+            self.dir.mkdir(parents=True, exist_ok=True)
 
-            self.index_file_path = self.cache_directory / f"{self.name}.html"
-            self.metadata_path = self.cache_directory / f"{self.index_file_path.stem}.metadata.json"
+            self.index_file_path = self.dir / f"{self.name}.html"
+            self.metadata_path = self.dir / f"{self.index_file_path.stem}.metadata.json"
         else:
             print(error.decode())
 
@@ -84,7 +94,7 @@ class ManDocSet(DocSet):
 
     def build_manpage_metadata(self):
         process = subprocess.Popen(
-            ["mandoc", "-T", "html", self.path.as_posix()],
+            ["mandoc", "-T", "html", "-O", f"style={self.style_file.as_posix()}", self.path.as_posix()],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
