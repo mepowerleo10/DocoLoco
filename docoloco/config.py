@@ -1,9 +1,20 @@
-class Config:
-  def __init__(self) -> None:
-    self.data_path = "data"
-    self.ui_path = f"{self.data_path}/ui"
+from pathlib import Path
 
-  def ui(self, name: str) -> str:
-    return f"{self.ui_path}/{name}.ui" 
-  
+
+class Config:
+    def __init__(self) -> None:
+        self.data_dir = "data"
+        self.ui_dir = f"{self.data_dir}/ui"
+
+    def ui(self, name: str) -> str:
+        return f"{self.ui_dir}/{name}.ui"
+
+    @property
+    def data_path(self) -> Path:
+        return Path(self.data_dir).absolute()
+
+    def get_path_from_data(self, name: str) -> Path:
+        return self.data_path / name
+
+
 default_config = Config()

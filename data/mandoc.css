@@ -1,0 +1,53 @@
+:root {
+  --background-color-light: #ffffff;
+  --background-color-dark: #1a1a1a;
+  --text-color-light: #333333;
+  --text-color-dark: #dddddd;
+  --link-color: #007bff;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  line-height: 1.6;
+  margin: 20px;
+  background-color: var(--background-color-light);
+  color: var(--text-color-light);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+body.dark-mode {
+  background-color: var(--background-color-dark);
+  color: var(--text-color-dark);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--text-color-light);
+}
+
+a {
+  color: var(--link-color);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Add other styles as needed */
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: var(--background-color-dark);
+    color: var(--text-color-dark);
+  }
+
+  body.light-mode {
+    background-color: var(--background-color-light);
+    color: var(--text-color-light);
+  }
+}
