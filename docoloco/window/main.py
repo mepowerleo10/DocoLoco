@@ -159,12 +159,12 @@ class MainWindow(Adw.ApplicationWindow):
         if doc_page:
             self.go_back_action.set_enabled(doc_page.can_go_back)
             self.go_forward_action.set_enabled(doc_page.can_go_forward)
+            self.header_bar.set_title_widget(doc_page.locator)
 
         else:
             self.go_back_action.set_enabled(False)
             self.go_forward_action.set_enabled(False)
-
-        self.header_bar.set_title_widget(doc_page.locator)
+        
 
     def change_filter(self, _, name_variant):
         name = name_variant.get_string()
