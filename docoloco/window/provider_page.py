@@ -44,8 +44,10 @@ class ProviderPage(Adw.NavigationPage):
 
             self.build_query_results_section()
 
-        self.back_btn.connect("activate", self.on_click_back) 
-        self.back_btn.connect("clicked", self.on_click_back, on_back_callback) # 'activate' does not work...
+        self.back_btn.connect("activate", self.on_click_back)
+        self.back_btn.connect(
+            "clicked", self.on_click_back, on_back_callback
+        )  # 'activate' does not work...
 
     def create_status_page(self):
         self.status_page = Adw.StatusPage()
@@ -88,6 +90,7 @@ class ProviderPage(Adw.NavigationPage):
         search_selection_model.autoselect = False
 
         results_view = Gtk.ListView()
+        results_view.set_show_separators(True)
         results_view.set_model(search_selection_model)
         results_view.set_factory(view_factory)
         results_view.connect("activate", self._on_result_activate)
@@ -99,6 +102,7 @@ class ProviderPage(Adw.NavigationPage):
         label = Gtk.Label()
 
         box.append(label)
+        box.get_style_context().add_class("result-line")
         list_item.set_child(box)
 
     def _bind_query_result(self, factory, obj):
@@ -127,3 +131,5 @@ class ProviderPage(Adw.NavigationPage):
     def filter_or_find(self, value: str, filter_func: Callable[[Gtk.Widget], bool]):
         if self.provider.type == DocumentationProvider.Type.QUERYABLE:
             self.provider.query(value)
+        else:
+            self.docsets_box.set_filter_func(filter_func)

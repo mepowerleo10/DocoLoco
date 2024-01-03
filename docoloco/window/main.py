@@ -189,9 +189,6 @@ class MainWindow(Adw.ApplicationWindow):
         self.selected_doc_page.go_forward()
 
     def filter_docset(self, action=None, name: GLib.Variant = None):
-        if not name:
-            return
-
         self.selected_doc_page.filter_docset(name.get_string())
 
     def change_docset(self, action, parameters):

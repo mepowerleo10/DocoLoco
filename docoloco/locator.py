@@ -108,10 +108,18 @@ class Locator(Adw.Bin):
     def search_changed(self):
         text: str = self.entry.get_text()
 
-        if not (text or self.popover.is_visible()):
-            return
+        """ if not (text or self.popover.is_visible()):
+            return """
 
         text = text.strip().lower()
+
+        if self.docset:
+            self.search_docset(text)
+        else:
+            variant = GLib.Variant.new_string(text)
+            self.activate_action("win.filter_docset", variant)
+
+    def search_docset(self, text: str):
         self.search_result_model.remove_all()
 
         results = (
