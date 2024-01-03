@@ -18,7 +18,6 @@ class MainWindow(Adw.ApplicationWindow):
     __gtype_name__ = "ApplicationWindow"
     tab_view = cast(Adw.TabView, Gtk.Template.Child("view"))
     tab_bar = cast(Adw.TabBar, Gtk.Template.Child())
-    locator: Locator = None
     header_bar: Adw.HeaderBar = cast(Adw.HeaderBar, Gtk.Template.Child("header_bar"))
 
     go_back_action: Gio.SimpleAction
@@ -29,7 +28,7 @@ class MainWindow(Adw.ApplicationWindow):
     def __init__(self, app: Adw.Application):
         super().__init__(application=app, title="DocoLoco")
         self.app = app
-        self.locator = Locator()
+        self.setup_style_context()
 
         self.go_back_action = Gio.SimpleAction(name="go_back")
         self.go_forward_action = Gio.SimpleAction(name="go_forward")
@@ -42,7 +41,6 @@ class MainWindow(Adw.ApplicationWindow):
 
         # TODO: Setup tab_view signals for on-close
 
-        self.header_bar.set_title_widget(self.locator)
         self.popover_primary_menu = cast(
             Gtk.PopoverMenu, self.primary_menu_btn.get_popover()
         )
@@ -54,6 +52,15 @@ class MainWindow(Adw.ApplicationWindow):
 
         self.go_forward_action.connect("activate", self.go_forward)
         self.add_action(self.go_forward_action)
+
+    def setup_style_context(self):
+        css_provider = Gtk.CssProvider()
+        css_provider.load_from_path(
+            default_config.get_path_from_data("style.css").as_posix()
+        )
+        self.get_style_context().add_provider_for_display(
+            self.get_display(), css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
 
     def setup_actions(self):
         actions = [
@@ -124,7 +131,6 @@ class MainWindow(Adw.ApplicationWindow):
 
         doc_page = DocPage(docset=docset) if docset else DocPage()
         self.add_tab(doc_page)
-        self.locator.set_docset(docset)
 
     def add_tab(self, doc_page: DocPage, position: int = None):
         if position:
@@ -146,17 +152,17 @@ class MainWindow(Adw.ApplicationWindow):
 
     def update_ui_for_page_change(self, doc_page: DocPage = None):
         if doc_page:
-            self.locator.set_docset(doc_page.docset)
             self.go_back_action.set_enabled(doc_page.can_go_back)
             self.go_forward_action.set_enabled(doc_page.can_go_forward)
 
         else:
-            self.locator.set_docset(None)
             self.go_back_action.set_enabled(False)
             self.go_forward_action.set_enabled(False)
 
+        self.header_bar.set_title_widget(doc_page.locator)
+
     def focus_locator(self, *args):
-        self.locator.toggle_focus()
+        self.selected_doc_page.locator.toggle_focus()
 
     def zoom_in(self, *args):
         self.selected_doc_page.zoom_in()
@@ -188,7 +194,6 @@ class MainWindow(Adw.ApplicationWindow):
         if not docset.is_populated:
             docset.populate_all_sections()
 
-        self.locator.set_docset(docset)
         doc_page = DocPage(docset)
 
         page = self.tab_view.get_selected_page()
@@ -203,7 +208,7 @@ class MainWindow(Adw.ApplicationWindow):
 
     def open_page_uri(self, uri: str):
         if not self.tab_view.get_n_pages():
-            doc_page = DocPage(self.locator.docset, uri)
+            doc_page = DocPage(uri)
             self.add_tab(doc_page)
         else:
             doc_page = self.selected_doc_page
