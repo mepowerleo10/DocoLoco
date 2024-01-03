@@ -1,6 +1,8 @@
 from enum import Enum
 from typing import Callable, cast
 
+from .helpers import is_valid_url
+
 from .models.base import Section
 
 import gi
@@ -24,7 +26,7 @@ class SearchResult(GObject.Object):
 
     def __init__(
         self,
-        type: FilterType,
+        item_type: FilterType,
         title: str,
         icon_name: str,
         has_child: bool,
@@ -33,7 +35,7 @@ class SearchResult(GObject.Object):
     ) -> None:
         super().__init__()
 
-        self.type = type
+        self.item_type = item_type
         self.title = title
         self.icon_name = icon_name
         self.has_child = has_child
@@ -111,6 +113,7 @@ class Locator(Adw.Bin):
 
         text = text.strip().lower()
         self.search_result_model.remove_all()
+
         results = (
             self.docset.search(text, self.section.title)
             if self.section
@@ -123,10 +126,32 @@ class Locator(Adw.Bin):
                     item.name,
                     item.icon_name,
                     False,
-                    on_select=self.on_select_doc,
+                    on_select=self.on_select_doc_entry,
                     callback_args={"url": item.url},
                 )
             )
+
+        if self.search_result_model.get_n_items() == 0:
+            google_item = SearchResult(
+                FilterType.DOC_ENTRY,
+                title=f"Google - {text}",
+                icon_name="web-browser-symbolic",
+                has_child=False,
+                on_select=self.on_select_doc_entry,
+                callback_args={"url": f"https://google.com/search?q={text}"},
+            )
+            self.search_result_model.append(google_item)
+
+        if is_valid_url(text):
+            url_link_item = SearchResult(
+                item_type=FilterType.DOC_ENTRY,
+                title=f"Open Link - {text}",
+                icon_name="emblem-symbolic-link",
+                has_child=False,
+                on_select=self.on_select_doc_entry,
+                callback_args={"url": text},
+            )
+            self.search_result_model.insert(0, url_link_item)
 
         self.popover.set_visible(True)
 
@@ -137,7 +162,7 @@ class Locator(Adw.Bin):
         if result:
             result.on_select(**result.callback_args)
 
-    def on_select_doc(self, url: str):
+    def on_select_doc_entry(self, url: str):
         variant = GLib.Variant.new_string(url)
         self.activate_action("win.open_page", variant)
         self.toggle_focus()
