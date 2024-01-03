@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import Callable, cast
+
 from .models.base import Section
 
 import gi
@@ -15,7 +16,7 @@ from gi.repository import Adw, Gio, GLib, GObject, Gtk  # noqa: E402
 class FilterType(Enum):
     DOCSET = 1
     SECTION = 2
-    DOC = 3
+    DOC_ENTRY = 3
 
 
 class SearchResult(GObject.Object):
@@ -64,8 +65,9 @@ class Locator(Adw.Bin):
 
         self.search_result_model = Gio.ListStore(item_type=SearchResult)
 
-        self.entry.connect("activate", lambda _: self.toggle_focus())
+        self.entry.connect("activate", self.toggle_focus)
         self.entry.connect("changed", lambda _: self.search_changed())
+        self.entry.connect("icon-press", self.on_icon_pressed)
 
         view_factory = Gtk.SignalListItemFactory()
         view_factory.connect("setup", self.setup_search_result)
@@ -88,6 +90,7 @@ class Locator(Adw.Bin):
 
         box.append(icon)
         box.append(label)
+        box.get_style_context().add_class("result-line")
         list_item.set_child(box)
 
     def bind_search_result(self, factory, obj: GObject.Object):
@@ -116,7 +119,7 @@ class Locator(Adw.Bin):
         for item in results:
             self.search_result_model.append(
                 SearchResult(
-                    FilterType.DOC,
+                    FilterType.DOC_ENTRY,
                     item.name,
                     item.icon_name,
                     False,
@@ -175,3 +178,9 @@ class Locator(Adw.Bin):
         self.section = Section(name, self.docset.symbol_counts[name])
         icon.set_from_icon_name(self.section.icon_name)
         label.set_label(self.section.title)
+
+        self.search_changed()
+
+    def on_icon_pressed(self, entry, icon_position: Gtk.EntryIconPosition, *data):
+        if icon_position == Gtk.EntryIconPosition.SECONDARY:
+            self.entry.set_text("")
