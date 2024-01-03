@@ -231,10 +231,17 @@ class DashDocSet(DocSet):
     def search(self, value: str, section: str = '') -> List[Doc]:
         columns_to_select = self.get_columns()
         symbols_aka = []
-        for aka in self.symbol_strings[section]:
-            symbols_aka.append(f"type LIKE '%{aka}%'")
+        where_conditions = f"name LIKE '%{value}%'"
+
+        if section and len(section) > 0:
+            for aka in self.symbol_strings[section]:
+                symbols_aka.append(f"type LIKE '%{aka}%'")
+            
+            where_conditions = f"{where_conditions} AND ({"OR ".join(symbols_aka)})"
+
         
-        query = f"SELECT {columns_to_select} FROM {self.table_name} WHERE name LIKE '%{value}%' AND ({"OR ".join(symbols_aka)}) LIMIT 20"
+        
+        query = f"SELECT {columns_to_select} FROM {self.table_name} WHERE {where_conditions} LIMIT 20"
         rows: sqlite3.Cursor = self.con.cursor().execute(query)
 
         results: List[Doc] = []

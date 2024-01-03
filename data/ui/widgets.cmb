@@ -166,6 +166,7 @@
 	(6,2,"GtkWidget","vexpand-set","True",None,None,None,None,None,None,None,None,None),
 	(6,2,"GtkWidget","width-request","450",None,None,None,None,None,None,None,None,None),
 	(6,3,"GtkListView","enable-rubberband","True",None,None,None,None,None,None,None,None,None),
+	(6,3,"GtkListView","show-separators","True",None,None,None,None,None,None,None,None,None),
 	(6,3,"GtkListView","single-click-activate","True",None,None,None,None,None,None,None,None,None),
 	(6,3,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
 	(6,3,"GtkWidget","hexpand-set","True",None,None,None,None,None,None,None,None,None),

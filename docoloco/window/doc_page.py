@@ -177,9 +177,6 @@ class DocPage(Adw.Bin):
         label.connect("activate-link", self._on_related_link_clicked)
         label.connect("activate-current-link", self._on_related_link_clicked)
 
-        box.append(icon)
-        box.append(label)
-        list_item.set_child(box)
 
     def _on_related_link_clicked(self, label: Gtk.Label, path: str, *args):
         label.stop_emission_by_name("activate-link")

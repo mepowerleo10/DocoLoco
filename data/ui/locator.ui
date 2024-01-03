@@ -25,6 +25,7 @@
             <property name="enable-rubberband">True</property>
             <property name="hexpand">True</property>
             <property name="hexpand-set">True</property>
+            <property name="show-separators">True</property>
             <property name="single-click-activate">True</property>
             <property name="vexpand">True</property>
             <property name="vexpand-set">True</property>
