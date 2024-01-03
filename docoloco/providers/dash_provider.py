@@ -228,10 +228,9 @@ class DashDocSet(DocSet):
             self.sections[name] = section_index
 
     
-    def search(self, value: str) -> List[Doc]:
+    def search(self, value: str, section: str = '') -> List[Doc]:
         columns_to_select = self.get_columns()
-            
-        query = f"SELECT {columns_to_select} FROM {self.table_name} WHERE name LIKE '%{value}%' LIMIT 20"
+        query = f"SELECT {columns_to_select} FROM {self.table_name} WHERE name LIKE '%{value}%' AND type LIKE '%{section}%' LIMIT 20"
         rows: sqlite3.Cursor = self.con.cursor().execute(query)
 
         results: List[Doc] = []

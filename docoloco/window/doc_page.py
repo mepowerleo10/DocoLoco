@@ -2,6 +2,7 @@ import html
 import re
 from typing import cast
 from urllib.parse import unquote
+from ..locator import Locator
 
 import gi
 from bs4 import BeautifulSoup
@@ -42,6 +43,7 @@ class DocPage(Adw.Bin):
     def __init__(self, docset: DocSet = None, uri: str = None):
         super().__init__(hexpand=True, vexpand=True)
         self.docset = docset
+        self.locator = Locator()
 
         self.web_view.connect("load-failed", self.on_load_failed)
         self.web_view.connect("load-changed", self.on_load_changed)
@@ -59,6 +61,7 @@ class DocPage(Adw.Bin):
         if uri:
             self.load_uri(uri)
         elif docset:
+            self.locator.set_docset(docset)
             self.load_uri(docset.index_file_path.as_uri())
         else:
             new_page = NewPage()
@@ -266,15 +269,24 @@ class DocPage(Adw.Bin):
             )
             action.connect("activate", self._on_open_in_new_tab)
             open_in_new_tab_item = WebKit.ContextMenuItem.new_from_gaction(
-                action, "Open In New Tab", GLib.Variant.new_string(hit_test_result.get_link_uri())
+                action,
+                "Open In New Tab",
+                GLib.Variant.new_string(hit_test_result.get_link_uri()),
             )
-            context_menu.remove(context_menu.get_item_at_position(1)) # Remove the 'Open in New Window' action
-            context_menu.remove(context_menu.get_item_at_position(1)) # Remove the 'Download Linked File' action
+            context_menu.remove(
+                context_menu.get_item_at_position(1)
+            )  # Remove the 'Open in New Window' action
+            context_menu.remove(
+                context_menu.get_item_at_position(1)
+            )  # Remove the 'Download Linked File' action
             context_menu.insert(open_in_new_tab_item, 1)
 
     def _on_open_in_new_tab(self, action, url):
         self.activate_action("win.new_tab")
-        self.activate_action("win.change_docset", GLib.Variant("(ssi)", (self.docset.provider_id, self.docset.name, 0)))
+        self.activate_action(
+            "win.change_docset",
+            GLib.Variant("(ssi)", (self.docset.provider_id, self.docset.name, 0)),
+        )
         self.activate_action("win.open_page", url)
 
     def setup_search_signals(self):

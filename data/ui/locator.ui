@@ -39,7 +39,7 @@
     <child>
       <object class="GtkBox">
         <child>
-          <object class="AdwSplitButton" id="docset_btn">
+          <object class="GtkButton" id="docset_btn">
             <child>
               <object class="GtkBox">
                 <child>
@@ -58,11 +58,33 @@
           </object>
         </child>
         <child>
+          <object class="AdwSplitButton" id="section_btn">
+            <property name="margin-end">2</property>
+            <child>
+              <object class="GtkBox">
+                <child>
+                  <object class="GtkImage">
+                    <property name="icon-name">document</property>
+                    <property name="margin-end">8</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label">All</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
           <object class="GtkBox" id="search_box">
             <child>
               <object class="GtkEntry" id="locator_entry">
                 <property name="focusable">True</property>
                 <property name="placeholder-text">Press Ctrl+P to search a documentation</property>
+                <property name="primary-icon-name">system-search-symbolic</property>
+                <property name="secondary-icon-name">edit-clear-symbolic</property>
                 <property name="valign">center</property>
                 <property name="width-request">450</property>
               </object>

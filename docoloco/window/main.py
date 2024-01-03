@@ -3,7 +3,6 @@ from typing import cast
 import gi
 
 from ..config import default_config
-from ..locator import Locator
 from ..registry import get_registry
 from .doc_page import DocPage
 
@@ -123,6 +122,12 @@ class MainWindow(Adw.ApplicationWindow):
         g_action.connect("activate", self.filter_docset)
         self.add_action(g_action)
 
+        g_action = Gio.SimpleAction(
+            name="change_filter", parameter_type=GLib.VariantType.new("s")
+        )
+        g_action.connect("activate", self.change_filter)
+        self.add_action(g_action)
+
     @Gtk.Template.Callback()
     def new_tab(self, *args, **kwargs):
         docset = None
@@ -161,6 +166,10 @@ class MainWindow(Adw.ApplicationWindow):
 
         self.header_bar.set_title_widget(doc_page.locator)
 
+    def change_filter(self, _, name_variant):
+        name = name_variant.get_string()
+        self.selected_doc_page.locator.change_filter(name)
+    
     def focus_locator(self, *args):
         self.selected_doc_page.locator.toggle_focus()
 
