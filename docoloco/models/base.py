@@ -103,7 +103,7 @@ class DocSet(GObject.Object):
         self.symbol_counts: Dict[str, int] = dict()
         self.sections: Dict[str, Gio.ListStore] = dict()
 
-    def search(self, value: str) -> List[Doc]:
+    def search(self, value: str, section: str = None) -> List[Doc]:
         """Search the docset for a value, and return a list of `Doc` objects."""
         ...
 
