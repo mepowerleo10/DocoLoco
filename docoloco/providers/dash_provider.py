@@ -98,19 +98,21 @@ class DashDocSet(DocSet):
     def load_metadata(self):
         """Reads the meta.json file"""
 
+        try:
+            with open(self.dir / "meta.json") as meta_file:
+                self.meta = json.load(meta_file)
+                self.name = self.meta.get("name", None)
+                self.version = self.meta.get("version")
+                self.revision = self.meta.get("revision")
+                self.title = self.meta.get("title", None)
 
-        with open(self.dir / "meta.json") as meta_file:
-            self.meta = json.load(meta_file)
-            self.name = self.meta.get("name", None)
-            self.version = self.meta.get("version")
-            self.revision = self.meta.get("revision")
-            self.title = self.meta.get("title", None)
-
-            if "extra" in self.meta.keys():
-                extra: Dict = self.meta.get("extra")
-                self.is_javascript_enabled = extra.get("isJavaScriptEnabled", None)
-                self.index_file_path = extra.get("indexFilePath", None)
-                self.keywords = set([word for word in extra.get("keyword", [])])
+                if "extra" in self.meta.keys():
+                    extra: Dict = self.meta.get("extra")
+                    self.is_javascript_enabled = extra.get("isJavaScriptEnabled", None)
+                    self.index_file_path = extra.get("indexFilePath", None)
+                    self.keywords = set([word for word in extra.get("keyword", [])])
+        except Exception as e:
+            print(e)
     
     def load_plist_info(self):
         """Reads the Info.plist or info.plist file and prefills the metadata fields"""
