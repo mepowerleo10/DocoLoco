@@ -10,7 +10,7 @@ from gi.repository import Gio, GObject  # noqa: E402
 
 class Sectionable:
     icons = {
-        "Attribute": "lang-define-symbolic",
+        "Attribute": "lang-typedef-symbolic",
         "Binding": "lang-define-symbolic",
         "Category": "lang-include-symbolic",
         "Class": "lang-class-symbolic",
@@ -18,13 +18,16 @@ class Sectionable:
         "Constructor": "lang-method-symbolic",
         "Enumeration": "lang-enum-symbolic",
         "Event": "lang-include-symbolic",
+        "Exception": "tools-check-spelling-symbolic",
         "Field": "lang-variable-symbolic",
         "Function": "lang-function-symbolic",
         "Guide": "accessories-text-editor-symbolic",
+        "Interface": "lang-define-symbolic",
         "Namespace": "lang-namespace-symbolic",
         "Macro": "lang-define-symbolic",
         "Method": "lang-method-symbolic",
         "Operator": "lang-typedef-symbolic",
+        "Package": "lang-namespace-symbolic",
         "Property": "lang-variable-symbolic",
         "Protocol": "lang-typedef-symbolic",
         "Structure": "lang-struct-symbolic",
