@@ -14,7 +14,7 @@ gi.require_version("WebKit", "6.0")
 from gi.repository import Adw, Gtk  # noqa: E402
 
 
-@Gtk.Template(filename=default_config.ui("new_page"))
+@Gtk.Template(filename=default_config.template("new_page"))
 class NewPage(Adw.Bin):
     __gtype_name__ = "NewPage"
     navigation_view = cast(Adw.NavigationView, Gtk.Template.Child())

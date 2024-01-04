@@ -12,7 +12,7 @@ gi.require_version("WebKit", "6.0")
 from gi.repository import Adw, Gio, GLib, GObject, Gtk  # noqa: E402
 
 
-@Gtk.Template(filename=default_config.ui("main"))
+@Gtk.Template(filename=default_config.template("main"))
 class MainWindow(Adw.ApplicationWindow):
     __gtype_name__ = "ApplicationWindow"
     tab_view = cast(Adw.TabView, Gtk.Template.Child("view"))
@@ -55,7 +55,7 @@ class MainWindow(Adw.ApplicationWindow):
     def setup_style_context(self):
         css_provider = Gtk.CssProvider()
         css_provider.load_from_path(
-            default_config.get_path_from_data("style.css").as_posix()
+            default_config.get_path_from_style("style.css").as_posix()
         )
         self.get_style_context().add_provider_for_display(
             self.get_display(), css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION

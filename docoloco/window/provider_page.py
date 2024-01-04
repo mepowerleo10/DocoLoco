@@ -12,7 +12,7 @@ gi.require_version("WebKit", "6.0")
 from gi.repository import Adw, Gio, GLib, Gtk  # noqa: E402
 
 
-@Gtk.Template(filename=default_config.ui("provider_page"))
+@Gtk.Template(filename=default_config.template("provider_page"))
 class ProviderPage(Adw.NavigationPage):
     __gtype_name__ = "ProviderPage"
 

@@ -52,7 +52,7 @@ class ManDocSet(DocSet):
 
         self.style_file = self.cache_dir / "style.css"
         if not self.style_file.exists():
-            copyfile(default_config.get_path_from_data("mandoc.css"), self.style_file)
+            copyfile(default_config.get_path_from_style("mandoc.css"), self.style_file)
 
 
 
