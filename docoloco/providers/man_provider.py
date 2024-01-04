@@ -1,18 +1,16 @@
 import json
-from shutil import copyfile
 import subprocess
 from pathlib import Path
+from shutil import copyfile
 from typing import Dict, List
 
 from bs4 import BeautifulSoup
-
 from gi.repository.Gio import ListStore
 
+from ..config import default_config
 from ..models import DocSet
 from ..models.base import Doc
 from .base import DocumentationProvider
-
-from ..config import default_config
 
 
 class ManProvider(DocumentationProvider):
@@ -49,7 +47,7 @@ class ManDocSet(DocSet):
         self.description = description
         self.path: Path = None
         self.related_docs = self.new_docs_list()
-        self.cache_dir = Path.home() / ".cache/DocoLoco/ManPages"
+        self.cache_dir = default_config.user_cache_dir / "DocoLoco/ManPages"
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 
         self.style_file = self.cache_dir / "style.css"

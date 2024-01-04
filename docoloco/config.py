@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from gi.repository import GLib
+
 
 class Config:
     def __init__(self) -> None:
@@ -15,6 +17,22 @@ class Config:
 
     def get_path_from_data(self, name: str) -> Path:
         return self.data_path / name
+
+    @property
+    def user_data_dir(self) -> Path:
+        return Path(GLib.get_user_data_dir())
+
+    @property
+    def user_cache_dir(self) -> Path:
+        return Path(GLib.get_user_cache_dir())
+
+    @property
+    def user_config_dir(self) -> Path:
+        return Path(GLib.get_user_config_dir())
+
+    @property
+    def user_state_dir(self) -> Path:
+        return Path(GLib.get_user_state_dir())
 
 
 default_config = Config()

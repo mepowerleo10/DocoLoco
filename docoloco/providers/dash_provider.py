@@ -10,13 +10,14 @@ from gi.repository.Gio import ListStore
 
 from ..models import Doc, DocSet
 from .base import DocumentationProvider
+from ..config import default_config
 
 
 class DashProvider(DocumentationProvider):
     def __init__(self) -> None:
         super().__init__()
         self.name = "Dash"
-        self.root_path = Path(f"{Path.home()}/.local/share/Zeal/Zeal/docsets/")
+        self.root_path =  default_config.user_data_dir / "Zeal/Zeal/docsets/"
 
     def load(self):
         for doc_path in self.root_path.iterdir():
