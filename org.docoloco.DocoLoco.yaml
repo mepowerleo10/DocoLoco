@@ -1,0 +1,34 @@
+app-id: org.docoloco.DocoLoco.Devel
+runtime: org.gnome.Platform
+runtime-version: '45'
+tags:
+- devel
+- development
+- nightly
+sdk: org.gnome.Sdk
+command: docoloco
+build-options:
+  build-args:
+  - --share=network
+  test-args:
+  - --socket=wayland
+finish-args:
+- --socket=fallback-x11
+- --share=ipc
+- --socket=wayland
+- --device=dri
+- --socket=session-bus
+- --talk-name=org.gtk.vfs.*
+- --filesystem=xdg-run/gvfsd
+- --filesystem=xdg-cache/DocoLoco:create
+- --filesystem=xdg-data/Zeal:ro
+modules:
+- name: install
+  buildsystem: simple
+  build-commands:
+  - ls $(which python3)*
+  - pip3 install --prefix=${FLATPAK_DEST} docoloco-0.1.0-py3-none-any.whl
+  sources:
+  - type: file
+    path: dist/docoloco-0.1.0-py3-none-any.whl
+    

@@ -12,7 +12,7 @@ from gi.repository import Adw, GLib  # noqa: E402
 
 class DocoLoco(Adw.Application):
     def __init__(self):
-        super().__init__(application_id="com.github.mepowerleo10.DocoLoco")
+        super().__init__(application_id="org.docoloco.DocoLoco")
         GLib.set_application_name("Doco Loco")
         self.connect("activate", self.on_activate)
 

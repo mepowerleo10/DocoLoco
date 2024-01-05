@@ -1,10 +1,10 @@
 [tool.poetry]
 name = "docoloco"
-version = "0.1.0"
+version = "0.2.0"
 description = ""
 authors = ["Mussa Mipawa <mepowerleo10@gmail.com>"]
 readme = "README.md"
-repository = "github.com/mepowerleo10/DocoLoco"
+repository = "https://github.com/mepowerleo10/DocoLoco"
 
 [tool.poetry.dependencies]
 python = "^3.12"
