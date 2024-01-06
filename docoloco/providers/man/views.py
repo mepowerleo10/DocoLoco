@@ -82,3 +82,8 @@ class ManDocsetsView(Gtk.Box):
     def filter_or_find(self, value: str):
         value = value.strip().lower()
         self.provider.query(value)
+
+    def get_menu_widget(self) -> Gtk.Widget:
+        button = Gtk.Button()
+        button.set_icon_name("open-menu-symbolic")
+        return button

@@ -41,7 +41,7 @@
 	(3,30,"GtkScrolledWindow",None,29,None,None,None,None,None),
 	(3,31,"AdwClamp",None,30,None,None,None,None,None),
 	(3,32,"GtkBox","contents_box",31,None,None,None,None,None),
-	(3,33,"GtkBox",None,32,None,None,None,None,None),
+	(3,33,"GtkBox","title_row",32,None,None,None,None,None),
 	(3,34,"GtkButton","back_btn",33,None,None,None,None,None),
 	(3,35,"GtkBox",None,33,None,None,None,1,None),
 	(3,36,"GtkLabel","title",35,None,None,None,None,None),

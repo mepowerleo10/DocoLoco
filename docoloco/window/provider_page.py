@@ -3,7 +3,7 @@ from typing import Callable, cast
 import gi
 
 from docoloco.config import default_config
-from docoloco.providers import DocumentationProvider, FilterableProviderView
+from docoloco.providers import DocumentationProvider, DocumentationProviderView
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
@@ -17,6 +17,7 @@ class ProviderPage(Adw.NavigationPage):
     back_btn = cast(Gtk.Button, Gtk.Template.Child())
     title = cast(Gtk.Label, Gtk.Template.Child())
     contents_box = cast(Gtk.Box, Gtk.Template.Child())
+    title_row = cast(Gtk.Box, Gtk.Template.Child())
 
     def __init__(
         self,
@@ -28,8 +29,10 @@ class ProviderPage(Adw.NavigationPage):
         self.provider = provider
         self.title.set_label(provider.name)
 
-        self.view = provider.get_view()
+        self.view = cast(DocumentationProviderView, provider.get_view())
         self.contents_box.append(self.view)
+
+        self.title_row.append(self.view.get_menu_widget())
 
         self.back_btn.connect("activate", self.on_click_back)
         self.back_btn.connect(
@@ -41,5 +44,4 @@ class ProviderPage(Adw.NavigationPage):
             callback()
 
     def filter_or_find(self, value: str, filter_func: Callable[[Gtk.Widget], bool]):
-        filterable_view = cast(FilterableProviderView, self.view)
-        filterable_view.filter_or_find(value)
+        self.view.filter_or_find(value)
