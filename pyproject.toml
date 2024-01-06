@@ -10,6 +10,7 @@ repository = "https://github.com/mepowerleo10/DocoLoco"
 python = "^3.12"
 pygobject = "^3.46.0"
 beautifulsoup4 = "^4.12.2"
+pyyaml = "^6.0.1"
 
 [tool.poetry.group.dev.dependencies]
 pygobject-stubs = "^2.10.0"
