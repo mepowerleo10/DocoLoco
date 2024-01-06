@@ -14,6 +14,8 @@
                 <property name="maximum-size">1000</property>
                 <child>
                   <object class="GtkBox" id="contents_box">
+                    <property name="hexpand">True</property>
+                    <property name="hexpand-set">True</property>
                     <property name="margin-top">20</property>
                     <property name="orientation">vertical</property>
                     <property name="spacing">20</property>
@@ -37,12 +39,6 @@
                             </child>
                           </object>
                         </child>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkFlowBox" id="docsets_box">
-                        <property name="column-spacing">2</property>
-                        <property name="min-children-per-line">3</property>
                       </object>
                     </child>
                   </object>

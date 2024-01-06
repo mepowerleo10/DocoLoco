@@ -2,8 +2,8 @@ from typing import Callable, Dict, cast
 
 import gi
 
-from ..config import default_config
-from ..providers.base import DocumentationProvider
+from docoloco.config import default_config
+from docoloco.providers import DocumentationProvider
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
@@ -11,7 +11,7 @@ gi.require_version("WebKit", "6.0")
 from gi.repository import Adw, Gtk  # noqa: E402
 
 
-@Gtk.Template(filename=default_config.ui("providers_list_page"))
+@Gtk.Template(filename=default_config.template("providers_list_page"))
 class ProvidersListPage(Adw.NavigationPage):
     __gtype_name__ = "ProvidersListPage"
 

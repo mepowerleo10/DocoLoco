@@ -43,7 +43,7 @@ class SearchResult(GObject.Object):
         self.callback_args = callback_args
 
 
-@Gtk.Template(filename=default_config.ui("locator"))
+@Gtk.Template(filename=default_config.template("locator"))
 class Locator(Adw.Bin):
     __gtype_name__ = "Locator"
 

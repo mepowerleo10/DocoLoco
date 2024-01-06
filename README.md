@@ -11,6 +11,8 @@ DocoLoco is a versatile documentation browser that utilizes documentation sets p
 - [Running the Project](#running-the-project)
 - [Linux Dependencies](#linux-dependencies)
 - [Development](#development)
+- [Contributing](#contributing)
+- [Thanks To](#thanks-to)
 
 ## Preview
 
@@ -136,7 +138,9 @@ If you would like to contribute to DocoLoco, please follow our [Contribution Gui
 
 ## Thanks To
 
-[RTFM by @hugopol](https://github.com/hugopl/rtfm) for the inspiration and serving as the basis for understanding the structure of a GTK application.
+- [DASH](https://kapeli.com/dash) contributing the DocSets
+- [Zeal](https://github.com/zealdocs/zeal/) providing access to Dash Docsets
+- [RTFM by @hugopol](https://github.com/hugopl/rtfm) for the inspiration and serving as the basis for understanding the structure of a GTK application.
 
 ## License
 

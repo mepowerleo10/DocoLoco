@@ -1,6 +1,6 @@
 from enum import Enum
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Protocol, TypeVar
 
 import gi
 
@@ -8,7 +8,14 @@ from ..models import DocSet
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Gio, GObject  # noqa: E402
+from gi.repository import Gio, GObject, Gtk  # noqa: E402
+
+T = TypeVar("T")
+
+
+class FilterableProviderView[T](Protocol):
+    def filter_or_find(self, value: str):
+        ...
 
 
 class DocumentationProvider(GObject.Object):
@@ -37,3 +44,6 @@ class DocumentationProvider(GObject.Object):
             return self.docs[name]
         else:
             return self.query_results_model.get_item(position)
+
+    def get_view(self) -> Gtk.Widget:
+        ...

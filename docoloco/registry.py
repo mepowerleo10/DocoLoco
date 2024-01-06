@@ -1,9 +1,9 @@
 from typing import Dict, List
 
 from .models import Doc, DocSet
-from .providers.base import DocumentationProvider
-from .providers.dash_provider import DashProvider
-from .providers.man_provider import ManProvider
+from .providers import DocumentationProvider
+from .providers.dash import DashProvider
+from .providers.man import ManProvider
 
 
 class Registry:

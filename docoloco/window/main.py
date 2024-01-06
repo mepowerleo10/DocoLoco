@@ -1,4 +1,4 @@
-from typing import cast
+from typing import Callable, Tuple, cast
 
 import gi
 
@@ -12,7 +12,7 @@ gi.require_version("WebKit", "6.0")
 from gi.repository import Adw, Gio, GLib, GObject, Gtk  # noqa: E402
 
 
-@Gtk.Template(filename=default_config.ui("main"))
+@Gtk.Template(filename=default_config.template("main"))
 class MainWindow(Adw.ApplicationWindow):
     __gtype_name__ = "ApplicationWindow"
     tab_view = cast(Adw.TabView, Gtk.Template.Child("view"))
@@ -55,78 +55,38 @@ class MainWindow(Adw.ApplicationWindow):
     def setup_style_context(self):
         css_provider = Gtk.CssProvider()
         css_provider.load_from_path(
-            default_config.get_path_from_data("style.css").as_posix()
+            default_config.get_path_from_style("style.css").as_posix()
         )
         self.get_style_context().add_provider_for_display(
             self.get_display(), css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
 
     def setup_actions(self):
-        actions = [
-            {
-                "name": "new_tab",
-                "shortcut": "<primary>T",
-                "closure": lambda x, y: self.new_tab(),
-            },
-            {
-                "name": "page_search",
-                "shortcut": "<primary>F",
-                "closure": lambda x, y: self.selected_doc_page.page_search(),
-            },
-            {
-                "name": "focus_locator",
-                "shortcut": "<primary>P",
-                "closure": self.focus_locator,
-            },
-            {
-                "name": "zoom_in",
-                "shortcut": "<primary>equal",
-                "closure": self.zoom_in,
-            },
-            {
-                "name": "zoom_out",
-                "shortcut": "<primary>minus",
-                "closure": self.zoom_out,
-            },
-            {
-                "name": "reset_zoom",
-                "shortcut": "<primary>plus",
-                "closure": self.reset_zoom,
-            },
-        ]
+        actions = []
 
         for action in actions:
-            g_action = Gio.SimpleAction(name=action["name"])
-            g_action.connect("activate", action["closure"])
-            self.add_action(g_action)
+            self.create_action(action)
 
-            shortcut = action["shortcut"]
-            if shortcut:
-                self.app.set_accels_for_action(f"win.{action['name']}", [shortcut])
+        parameterized_actions = [
+            ("new_tab", "<primary>T", lambda *_: self.new_tab(), None),
+            (
+                "page_search",
+                "<primary>F",
+                lambda *_: self.selected_doc_page.page_search(),
+                None,
+            ),
+            ("focus_locator", "<primary>P", self.focus_locator, None),
+            ("zoom_in", "<primary>equal", self.zoom_in, None),
+            ("zoom_out", "<primary>minus", self.zoom_out, None),
+            ("reset_zoom", "<primary>plus", self.reset_zoom, None),
+            ("open_page", None, self.open_page, "s"),
+            ("change_docset", None, self.change_docset, "(ssi)"),
+            ("filter_docset", None, self.filter_docset, "s"),
+            ("change_filter", None, self.change_filter, "s"),
+        ]
 
-        g_action = Gio.SimpleAction(
-            name="open_page", parameter_type=GLib.VariantType.new("s")
-        )
-        g_action.connect("activate", self.open_page)
-        self.add_action(g_action)
-
-        g_action = Gio.SimpleAction(
-            name="change_docset", parameter_type=GLib.VariantType.new("(ssi)")
-        )
-        g_action.connect("activate", self.change_docset)
-        self.add_action(g_action)
-
-        g_action = Gio.SimpleAction(
-            name="filter_docset", parameter_type=GLib.VariantType.new("s")
-        )
-        g_action.connect("activate", self.filter_docset)
-        self.add_action(g_action)
-
-        g_action = Gio.SimpleAction(
-            name="change_filter", parameter_type=GLib.VariantType.new("s")
-        )
-        g_action.connect("activate", self.change_filter)
-        self.add_action(g_action)
+        for action in parameterized_actions:
+            self.create_action(action)
 
     @Gtk.Template.Callback()
     def new_tab(self, *args, **kwargs):
@@ -164,12 +124,11 @@ class MainWindow(Adw.ApplicationWindow):
         else:
             self.go_back_action.set_enabled(False)
             self.go_forward_action.set_enabled(False)
-        
 
     def change_filter(self, _, name_variant):
         name = name_variant.get_string()
         self.selected_doc_page.locator.change_filter(name)
-    
+
     def focus_locator(self, *args):
         self.selected_doc_page.locator.toggle_focus()
 
@@ -231,3 +190,17 @@ class MainWindow(Adw.ApplicationWindow):
 
         if page:
             return page.get_child()
+
+    def create_action(self, action_desc: Tuple[str, str, Callable, str]):
+        name, shortcut, on_activate, parameter_type = action_desc
+        g_action = Gio.SimpleAction(
+            name=name,
+            parameter_type=(
+                GLib.VariantType.new(parameter_type) if parameter_type else None
+            ),
+        )
+        g_action.connect("activate", on_activate)
+        self.add_action(g_action)
+
+        if shortcut:
+            self.app.set_accels_for_action(f"win.{name}", [shortcut])

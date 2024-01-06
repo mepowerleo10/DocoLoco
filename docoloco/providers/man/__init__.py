@@ -1,18 +1,17 @@
 import json
-from shutil import copyfile
 import subprocess
 from pathlib import Path
+from shutil import copyfile
 from typing import Dict, List
 
 from bs4 import BeautifulSoup
 
+from .views import ManDocsetsView
 from gi.repository.Gio import ListStore
 
-from ..models import DocSet
-from ..models.base import Doc
-from .base import DocumentationProvider
-
-from ..config import default_config
+from docoloco.config import default_config
+from docoloco.models import Doc, DocSet
+from docoloco.providers import DocumentationProvider
 
 
 class ManProvider(DocumentationProvider):
@@ -24,7 +23,11 @@ class ManProvider(DocumentationProvider):
     def query(self, name: str) -> List[DocSet]:
         self.query_results_model.remove_all()
 
-        process = subprocess.Popen(["man","-k", name], stdout=subprocess.PIPE, stderr=subprocess.PIPE,)
+        process = subprocess.Popen(
+            ["man", "-k", name],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
         output, error = process.communicate()
 
         if process.returncode == 0:
@@ -38,7 +41,10 @@ class ManProvider(DocumentationProvider):
         else:
             print(error.decode())
 
-    
+    def get_view(self):
+        return ManDocsetsView(self)
+
+
 class ManDocSet(DocSet):
     __gtype_name__ = "ManDocSet"
 
@@ -49,25 +55,27 @@ class ManDocSet(DocSet):
         self.description = description
         self.path: Path = None
         self.related_docs = self.new_docs_list()
-        self.cache_dir = Path.home() / ".cache/DocoLoco/ManPages"
+        self.cache_dir = default_config.user_cache_dir / "DocoLoco/ManPages"
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 
         self.style_file = self.cache_dir / "style.css"
         if not self.style_file.exists():
-            copyfile(default_config.get_path_from_data("mandoc.css"), self.style_file)
-
-
+            copyfile(default_config.get_path_from_style("mandoc.css"), self.style_file)
 
     def populate_all_sections(self) -> None:
         self.set_paths()
 
         if not self.index_file_path.exists():
             self.build_manpage_metadata()
-        
+
         self.load_symbols()
 
     def set_paths(self):
-        process = subprocess.Popen(["man", "-w", self.name], stdout=subprocess.PIPE, stderr=subprocess.PIPE,)
+        process = subprocess.Popen(
+            ["man", "-w", self.name],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
         output, error = process.communicate()
 
         if process.returncode == 0:
@@ -82,8 +90,6 @@ class ManDocSet(DocSet):
         else:
             print(error.decode())
 
-
-
     def load_symbols(self):
         with open(self.metadata_path, "r") as metadata_file:
             metadata: Dict = json.load(metadata_file)
@@ -94,7 +100,14 @@ class ManDocSet(DocSet):
 
     def build_manpage_metadata(self):
         process = subprocess.Popen(
-            ["mandoc", "-T", "html", "-O", f"style={self.style_file.as_posix()}", self.path.as_posix()],
+            [
+                "mandoc",
+                "-T",
+                "html",
+                "-O",
+                f"style={self.style_file.as_posix()}",
+                self.path.as_posix(),
+            ],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
@@ -117,8 +130,10 @@ class ManDocSet(DocSet):
         for section in soup.find_all("section"):
             heading_elements = section.find_all("h1", {"id": True})
             for heading in heading_elements:
-                symbols[heading.get_text(strip=True).replace("\n", "")] = (self.index_file_path / f"#{heading["id"]}" ).as_uri()
-        
+                symbols[heading.get_text(strip=True).replace("\n", "")] = (
+                    self.index_file_path / f"#{heading["id"]}"
+                ).as_uri()
+
         with open(self.metadata_path, "w") as metadata_file:
             json.dump(symbols, metadata_file)
 

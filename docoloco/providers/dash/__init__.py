@@ -5,18 +5,20 @@ from collections import OrderedDict, namedtuple
 from enum import Enum
 from pathlib import Path
 from typing import Dict, List
+from .views import DashDocsetsView
 
 from gi.repository.Gio import ListStore
 
-from ..models import Doc, DocSet
-from .base import DocumentationProvider
+from docoloco.config import default_config
+from docoloco.models import Doc, DocSet
+from docoloco.providers import DocumentationProvider
 
 
 class DashProvider(DocumentationProvider):
     def __init__(self) -> None:
         super().__init__()
         self.name = "Dash"
-        self.root_path = Path(f"{Path.home()}/.local/share/Zeal/Zeal/docsets/")
+        self.root_path = default_config.user_data_dir / "Zeal/Zeal/docsets/"
 
     def load(self):
         for doc_path in self.root_path.iterdir():
@@ -28,10 +30,15 @@ class DashProvider(DocumentationProvider):
 
         self.docs = OrderedDict(sorted(self.docs.items()))
 
+    def get_view(self):
+        return DashDocsetsView(self)
+
+
 def namedtuple_factory(cursor: sqlite3.Cursor, row):
     fields = [column[0] for column in cursor.description]
     cls = namedtuple("Row", fields)
     return cls._make(row)
+
 
 class InfoPlist:
     CFBundleName = "CFBundleName"
@@ -44,9 +51,10 @@ class InfoPlist:
     IsDashDocset = "isDashDocset"
     IsJavaScriptEnabled = "isJavaScriptEnabled"
 
+
 class DashDocSet(DocSet):
     __gtype_name__ = "DashDocSet"
-    
+
     class Type(Enum):
         DASH = 1
         ZDASH = 2
@@ -54,7 +62,7 @@ class DashDocSet(DocSet):
 
     def __init__(self, provider_id: str, path: Path) -> None:
         super().__init__(provider_id)
-        
+
         self.dir = path
         if not self.dir.exists():
             raise ValueError(f"Docset path {self.dir} does not exist")
@@ -93,24 +101,26 @@ class DashDocSet(DocSet):
         self.count_symbols()
 
         # self.populate_all_sections()
-    
+
     def load_metadata(self):
         """Reads the meta.json file"""
 
+        try:
+            with open(self.dir / "meta.json") as meta_file:
+                self.meta = json.load(meta_file)
+                self.name = self.meta.get("name", None)
+                self.version = self.meta.get("version")
+                self.revision = self.meta.get("revision")
+                self.title = self.meta.get("title", None)
 
-        with open(self.dir / "meta.json") as meta_file:
-            self.meta = json.load(meta_file)
-            self.name = self.meta.get("name", None)
-            self.version = self.meta.get("version")
-            self.revision = self.meta.get("revision")
-            self.title = self.meta.get("title", None)
+                if "extra" in self.meta.keys():
+                    extra: Dict = self.meta.get("extra")
+                    self.is_javascript_enabled = extra.get("isJavaScriptEnabled", None)
+                    self.index_file_path = extra.get("indexFilePath", None)
+                    self.keywords = set([word for word in extra.get("keyword", [])])
+        except Exception as e:
+            print(e)
 
-            if "extra" in self.meta.keys():
-                extra: Dict = self.meta.get("extra")
-                self.is_javascript_enabled = extra.get("isJavaScriptEnabled", None)
-                self.index_file_path = extra.get("indexFilePath", None)
-                self.keywords = set([word for word in extra.get("keyword", [])])
-    
     def load_plist_info(self):
         """Reads the Info.plist or info.plist file and prefills the metadata fields"""
 
@@ -140,7 +150,7 @@ class DashDocSet(DocSet):
 
         if InfoPlist.IsJavaScriptEnabled in self.plist.keys():
             self.is_javascript_enabled = self.plist.get(InfoPlist.IsJavaScriptEnabled)
-    
+
     def load_database(self):
         if not self.database_path.exists():
             raise ValueError(f"{self.database_path} does not exist")
@@ -197,38 +207,39 @@ class DashDocSet(DocSet):
             self.populate_section(key)
 
     def populate_section(self, name: str):
-            section_index = self.sections.get(name, self.new_docs_list())
-            section_size = section_index.get_n_items()
+        section_index = self.sections.get(name, self.new_docs_list())
+        section_size = section_index.get_n_items()
 
-            page_size = 20
-            if section_size > 0:
-                last_item: Doc = section_index.get_item(section_size - 1)
-                if last_item.type == "More":
-                    section_index.remove(section_size - 1) # remove the 'More...' link
+        page_size = 20
+        if section_size > 0:
+            last_item: Doc = section_index.get_item(section_size - 1)
+            if last_item.type == "More":
+                section_index.remove(section_size - 1)  # remove the 'More...' link
 
-                offset = section_size - 1
-            else:
-                offset = 0
+            offset = section_size - 1
+        else:
+            offset = 0
 
-            also_known_as_list = self.symbol_strings[name]
-            like_conditions = [f"type LIKE '%{value}%'" for value in also_known_as_list]
+        also_known_as_list = self.symbol_strings[name]
+        like_conditions = [f"type LIKE '%{value}%'" for value in also_known_as_list]
 
-            columns_to_select = self.get_columns()
+        columns_to_select = self.get_columns()
 
-            query = f"SELECT {columns_to_select} FROM {self.table_name} WHERE {"OR ".join(like_conditions)} LIMIT {page_size} OFFSET {offset}"
-            rows = self.con.cursor().execute(query)
+        query = f"SELECT {columns_to_select} FROM {self.table_name} WHERE {"OR ".join(like_conditions)} LIMIT {page_size} OFFSET {offset}"
+        rows = self.con.cursor().execute(query)
 
-            for row in rows.fetchall():
-                doc = self.build_doc_from_row(row)
-                section_index.append(doc)
+        for row in rows.fetchall():
+            doc = self.build_doc_from_row(row)
+            section_index.append(doc)
 
-            if section_index.get_n_items() < self.symbol_counts[name]:
-                section_index.append(Doc("Load more ...", "More", "more")) # add the 'More...' link
+        if section_index.get_n_items() < self.symbol_counts[name]:
+            section_index.append(
+                Doc("Load more ...", "More", "more")
+            )  # add the 'More...' link
 
-            self.sections[name] = section_index
+        self.sections[name] = section_index
 
-    
-    def search(self, value: str, section: str = '') -> List[Doc]:
+    def search(self, value: str, section: str = "") -> List[Doc]:
         columns_to_select = self.get_columns()
         symbols_aka = []
         where_conditions = f"name LIKE '%{value}%'"
@@ -236,11 +247,9 @@ class DashDocSet(DocSet):
         if section and len(section) > 0:
             for aka in self.symbol_strings[section]:
                 symbols_aka.append(f"type LIKE '%{aka}%'")
-            
+
             where_conditions = f"{where_conditions} AND ({"OR ".join(symbols_aka)})"
 
-        
-        
         query = f"SELECT {columns_to_select} FROM {self.table_name} WHERE {where_conditions} LIMIT 20"
         rows: sqlite3.Cursor = self.con.cursor().execute(query)
 
@@ -250,7 +259,7 @@ class DashDocSet(DocSet):
             results.append(doc)
 
         return results
-    
+
     def related_docs_of(self, url: str) -> ListStore:
         path = url.replace(f"{self.documents_dir.as_uri()}/", "").split("#")[0]
         columns_to_select = self.get_columns()
@@ -259,8 +268,10 @@ class DashDocSet(DocSet):
             where_condition = f"path LIKE '%{path}%' AND path <> '%{path}'"
         else:
             where_condition = f"path LIKE '%{path}' AND fragment IS NOT NULL"
-        
-        query = f"SELECT {columns_to_select} FROM {self.table_name} WHERE {where_condition}"
+
+        query = (
+            f"SELECT {columns_to_select} FROM {self.table_name} WHERE {where_condition}"
+        )
         rows = self.con.cursor().execute(query)
 
         related_links = self.new_docs_list()
@@ -270,14 +281,12 @@ class DashDocSet(DocSet):
 
         return related_links
 
-    
     def get_columns(self):
         columns_to_select = "name as name, type as type, path as path"
         if self.type != self.Type.DASH:
             columns_to_select = f"{columns_to_select}, fragment as fragment"
         return columns_to_select
 
-    
     def build_doc_from_row(self, row):
         symbol_type = self.parse_symbol_type(row.type)
         doc = Doc(name=row.name, type=symbol_type, path=self.get_uri_to(row.path))

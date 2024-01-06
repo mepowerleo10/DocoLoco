@@ -20,7 +20,7 @@ gi.require_version("WebKit2", "4.1")
 from gi.repository import Adw, Gdk, Gio, GLib, GObject, Gtk, Pango, WebKit  # noqa: E402
 
 
-@Gtk.Template(filename=default_config.ui("doc_page"))
+@Gtk.Template(filename=default_config.template("doc_page"))
 class DocPage(Adw.Bin):
     __gtype_name__ = "DocPage"
 

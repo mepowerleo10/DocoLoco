@@ -23,7 +23,7 @@ def plurarize(val: str) -> str:
             return f"{val}s"
 
 
-@Gtk.Template(filename=default_config.ui("section"))
+@Gtk.Template(filename=default_config.template("section"))
 class SectionWidget(Adw.Bin):
     __gtype_name__ = "SectionWidget"
 
