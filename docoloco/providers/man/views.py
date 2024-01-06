@@ -84,6 +84,8 @@ class ManDocsetsView(Gtk.Box):
         self.provider.query(value)
 
     def get_menu_widget(self) -> Gtk.Widget:
-        button = Gtk.Button()
-        button.set_icon_name("open-menu-symbolic")
-        return button
+        settings_button = Gtk.Button()
+        settings_button.set_icon_name("settings-symbolic")
+
+        
+        return settings_button

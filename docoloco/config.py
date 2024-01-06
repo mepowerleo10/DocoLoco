@@ -5,17 +5,13 @@ from gi.repository import GLib
 
 class Config:
     def __init__(self) -> None:
-        self.data_dir = "data"
-        self.ui_dir = Path(__file__).parent / "ui"
+        self.data_dir = Path(__file__).parent.parent / "data"
+        self.ui_dir = self.data_dir / "ui"
         self.templates_dir = self.ui_dir / "templates"
         self.styles_dir = self.ui_dir / "styles"
 
     def template(self, name: str) -> str:
-        return self.templates_dir/ f"{name}.ui"
-
-    @property
-    def data_path(self) -> Path:
-        return Path(self.data_dir).absolute()
+        return self.templates_dir / f"{name}.ui"
 
     def get_path_from_style(self, name: str) -> Path:
         return self.styles_dir / name
