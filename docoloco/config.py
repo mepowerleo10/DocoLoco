@@ -6,7 +6,7 @@ from gi.repository import GLib
 class Config:
     def __init__(self) -> None:
         self.data_dir = Path(__file__).parent.parent / "data"
-        self.ui_dir = self.data_dir / "ui"
+        self.ui_dir = Path(__file__).parent / "ui"
         self.templates_dir = self.ui_dir / "templates"
         self.styles_dir = self.ui_dir / "styles"
 
