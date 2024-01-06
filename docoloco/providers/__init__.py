@@ -1,1 +1,1 @@
-from .base import DocumentationProvider
+from .base import DocumentationProvider, DocSet, FilterableProviderView

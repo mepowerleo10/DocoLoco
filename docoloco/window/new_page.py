@@ -1,10 +1,11 @@
 from typing import cast
-from ..providers.base import DocumentationProvider
 
 import gi
 
-from ..config import default_config
-from ..registry import get_registry
+from docoloco.config import default_config
+from docoloco.providers import DocumentationProvider
+from docoloco.registry import get_registry
+
 from .provider_page import ProviderPage
 from .providers_list_page import ProvidersListPage
 
@@ -43,8 +44,6 @@ class NewPage(Adw.Bin):
         provider_docs_page.filter_or_find(title, filter_func)
 
     def open_provider_page(self, provider: DocumentationProvider):
-        provider_docs_page = ProviderPage(
-            provider, lambda: self.navigation_view.pop()
-        )
+        provider_docs_page = ProviderPage(provider, lambda: self.navigation_view.pop())
 
         self.navigation_view.push(provider_docs_page)

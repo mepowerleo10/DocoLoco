@@ -2,8 +2,8 @@ from typing import Callable, Dict, cast
 
 import gi
 
-from ..config import default_config
-from ..providers.base import DocumentationProvider
+from docoloco.config import default_config
+from docoloco.providers import DocumentationProvider
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
