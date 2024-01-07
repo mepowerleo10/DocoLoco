@@ -11,12 +11,12 @@ class Registry:
     entries: Dict[str, DocSet] = dict()
 
     def __init__(self) -> None:
-        registerd_providers: List[DocumentationProvider] = [
+        registered_providers: List[DocumentationProvider] = [
             DashProvider(),
             ManProvider(),
         ]
 
-        for provider in registerd_providers:
+        for provider in registered_providers:
             self.providers[provider.name] = provider
 
         self.initialize_providers()

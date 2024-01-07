@@ -38,3 +38,8 @@ class DashDocsetsView(Gtk.FlowBox):
             return value in label.get_label().lower()
 
         self.set_filter_func(filter_func)
+
+    def get_menu_widget(self) -> Gtk.Widget:
+        button = Gtk.Button()
+        button.set_icon_name("open-menu-symbolic")
+        return button

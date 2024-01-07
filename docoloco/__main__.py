@@ -1,4 +1,5 @@
 import sys
+from .config import APPLICATION_ID
 
 import gi
 
@@ -12,7 +13,7 @@ from gi.repository import Adw, GLib  # noqa: E402
 
 class DocoLoco(Adw.Application):
     def __init__(self):
-        super().__init__(application_id="org.docoloco.DocoLoco")
+        super().__init__(application_id=APPLICATION_ID)
         GLib.set_application_name("Doco Loco")
         self.connect("activate", self.on_activate)
 

@@ -20,7 +20,7 @@
                     <property name="orientation">vertical</property>
                     <property name="spacing">20</property>
                     <child>
-                      <object class="GtkBox">
+                      <object class="GtkBox" id="title_row">
                         <property name="hexpand">True</property>
                         <child>
                           <object class="GtkButton" id="back_btn">
