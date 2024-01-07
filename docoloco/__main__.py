@@ -1,5 +1,7 @@
 import sys
-from .config import APPLICATION_ID
+from typing import cast
+
+from docoloco.config import APPLICATION_ID, default_config
 
 import gi
 
@@ -8,7 +10,7 @@ from .window import MainWindow
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, GLib  # noqa: E402
+from gi.repository import Adw, Gtk, Gio, GLib  # noqa: E402
 
 
 class DocoLoco(Adw.Application):
@@ -17,10 +19,33 @@ class DocoLoco(Adw.Application):
         GLib.set_application_name("Doco Loco")
         self.connect("activate", self.on_activate)
 
+        actions = [
+            ("settings", None, self.show_settings),
+            ("about", None, self.show_about),
+        ]
+
+        for action in actions:
+            name, shortcut, closure = action
+            g_action = Gio.SimpleAction(name=name)
+            g_action.connect("activate", closure)
+            self.add_action(g_action)
+
+            if shortcut:
+                self.set_accels_for_action(f"app.{name}", shortcut)
+
     def on_activate(self, app):
         self.win = MainWindow(app)
         self.win.set_application(self)
         self.win.present()
+
+    def show_settings(self, *args):
+        pass
+
+    def show_about(self, *args):
+        builder = Gtk.Builder.new_from_file(filename=default_config.template("about"))
+        about = cast(Adw.AboutWindow, builder.get_object("about"))
+        about.set_transient_for(self.win)
+        about.present()
 
 
 def main(argv=None) -> int:
