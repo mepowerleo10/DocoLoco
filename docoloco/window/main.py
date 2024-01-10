@@ -81,6 +81,7 @@ class MainWindow(Adw.ApplicationWindow):
             ("reset_zoom", "<primary>plus", self.reset_zoom, None),
             ("open_page", None, self.open_page, "s"),
             ("change_docset", None, self.change_docset, "(ssi)"),
+            ("open_in_new_tab", None, self.open_in_new_tab, "(sss)"),
             ("filter_docset", None, self.filter_docset, "s"),
             ("change_filter", None, self.change_filter, "s"),
         ]
@@ -178,6 +179,19 @@ class MainWindow(Adw.ApplicationWindow):
         else:
             doc_page = self.selected_doc_page
             doc_page.load_uri(uri)
+
+    def open_in_new_tab(self, action, parameters):
+        if not (parameters or action):
+            return
+
+        url, provider_id, docset_name = parameters.unpack()
+
+        self.activate_action("win.new_tab")
+        self.activate_action(
+            "win.change_docset",
+            GLib.Variant("(ssi)", (provider_id, docset_name, 0)),
+        )
+        self.activate_action("win.open_page", GLib.Variant.new_string(url))
 
     def doc_page(self, pos: int) -> DocPage:
         adw_page = self.tab_view.get_nth_page(pos)

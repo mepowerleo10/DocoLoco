@@ -9,7 +9,7 @@ from ..models import Doc, DocSet, Section
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 gi.require_version("WebKit", "6.0")
-from gi.repository import Adw, Gdk, GLib, GObject, Gtk, Pango  # noqa: E402
+from gi.repository import Adw, Gdk, Gio, GLib, GObject, Gtk, Pango  # noqa: E402
 
 
 def plurarize(val: str) -> str:
@@ -85,6 +85,12 @@ class SectionWidget(Adw.Bin):
         label.connect("activate-link", self.on_item_clicked)
         label.connect("activate-current-link", self.on_item_clicked)
 
+        menu = Gio.Menu()
+        menu.append(
+            "Open In New Tab",
+            f"win.open_in_new_tab({GLib.Variant("(sss)", (doc.url, self.docset.provider_id, self.docset.name))})",
+        )
+        label.set_extra_menu(menu)
 
     def on_item_clicked(self, label: Gtk.Label, path: str, *args):
         label.stop_emission_by_name("activate-link")
