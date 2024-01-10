@@ -2,6 +2,7 @@ import sys
 from typing import cast
 
 from docoloco.config import APPLICATION_ID, default_config
+from .window.preferences import PreferencesWindow
 
 import gi
 
@@ -20,7 +21,7 @@ class DocoLoco(Adw.Application):
         self.connect("activate", self.on_activate)
 
         actions = [
-            ("settings", None, self.show_settings),
+            ("settings", None, self.show_preferences),
             ("about", None, self.show_about),
         ]
 
@@ -38,8 +39,9 @@ class DocoLoco(Adw.Application):
         self.win.set_application(self)
         self.win.present()
 
-    def show_settings(self, *args):
-        pass
+    def show_preferences(self, *args):
+        preferences_window = PreferencesWindow(parent_window=self.win)
+        preferences_window.present()
 
     def show_about(self, *args):
         builder = Gtk.Builder.new_from_file(filename=default_config.template("about"))
