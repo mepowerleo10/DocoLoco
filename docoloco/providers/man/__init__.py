@@ -24,7 +24,7 @@ class ManProvider(DocumentationProvider):
         self.query_results_model.remove_all()
 
         process = subprocess.Popen(
-            ["man", "-k", name],
+            ["man", "-k", "--regex", name],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
