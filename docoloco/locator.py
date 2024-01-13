@@ -196,8 +196,9 @@ class Locator(Adw.Bin):
             self.entry.set_placeholder_text("Press Ctrl+P to filter docsets")
 
     def toggle_focus(self, *args):
-        self.popover.set_visible(not self.popover.get_visible())
         self.entry.grab_focus()
+        if self.docset:
+            self.popover.set_visible(not self.popover.get_visible())
 
     def on_click_docset_btn(self, *args):
         if self.docset:
