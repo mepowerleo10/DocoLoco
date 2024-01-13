@@ -19,6 +19,7 @@ class ManProvider(DocumentationProvider):
         super().__init__()
         self.name = "Man Pages"
         self.type = DocumentationProvider.Type.QUERYABLE
+        self.icon_path = default_config.icon("providers/man.png")
 
     def query(self, name: str) -> List[DocSet]:
         self.query_results_model.remove_all()
@@ -57,6 +58,7 @@ class ManDocSet(DocSet):
         self.related_docs = self.new_docs_list()
         self.cache_dir = default_config.user_cache_dir / "DocoLoco/ManPages"
         self.cache_dir.mkdir(parents=True, exist_ok=True)
+        self.icon_files = [Path(default_config.icon("providers/man.png"))]
 
         self.style_file = self.cache_dir / "style.css"
         if not self.style_file.exists():

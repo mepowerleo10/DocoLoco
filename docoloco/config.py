@@ -22,6 +22,9 @@ class Config:
     def template(self, name: str) -> str:
         return (self.templates_dir / f"{name}.ui").as_posix()
 
+    def icon(self, path: str) -> str:
+        return (self.ui_dir / "icons" / path).as_posix()
+
     def get_path_from_style(self, name: str) -> Path:
         return self.styles_dir / name
 
