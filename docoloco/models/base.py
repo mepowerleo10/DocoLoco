@@ -8,7 +8,7 @@ gi.require_version("Adw", "1")
 from gi.repository import Gio, GObject  # noqa: E402
 
 
-class Sectionable:
+class IconsMixin:
     icons = {
         "Attribute": "lang-typedef-symbolic",
         "Binding": "lang-define-symbolic",
@@ -36,7 +36,7 @@ class Sectionable:
     }
 
 
-class Section(GObject.Object, Sectionable):
+class Section(GObject.Object, IconsMixin):
     def __init__(self, title: str, count: int):
         super().__init__()
 
@@ -48,7 +48,7 @@ class Section(GObject.Object, Sectionable):
         return self.icons.get(self.title, "lang-include-symbolic")
 
 
-class Doc(GObject.Object, Sectionable):
+class Doc(GObject.Object, IconsMixin):
     def __init__(self, name: str, type: str, path: str, fragment: str = None):
         super().__init__()
 
