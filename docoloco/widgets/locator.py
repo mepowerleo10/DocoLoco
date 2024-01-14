@@ -84,6 +84,8 @@ class Locator(Adw.Bin):
         self.results_view.connect("activate", lambda _, i: self.entry_activated(pos=i))
         self.popover.set_parent(self.search_box)
 
+        self.docset_btn.connect("clicked", self.on_click_docset_btn)
+
     def setup_search_result(self, factory, obj: GObject.Object):
         list_item = cast(Gtk.ListItem, obj)
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
@@ -186,6 +188,7 @@ class Locator(Adw.Bin):
             )
 
             menu = Gio.Menu()
+            menu.append("All", f"win.change_filter({GLib.Variant.new_string("All")})")
             for name, count in self.docset.symbol_counts.items():
                 menu.append(name, f"win.change_filter({GLib.Variant.new_string(name)})")
 
@@ -209,9 +212,14 @@ class Locator(Adw.Bin):
         icon: Gtk.Image = self.section_btn.get_child().get_first_child()
         label: Gtk.Label = self.section_btn.get_child().get_last_child()
 
-        self.section = Section(name, self.docset.symbol_counts[name])
-        icon.set_from_icon_name(self.section.icon_name)
-        label.set_label(self.section.title)
+        self.section = None if "All" in name else Section(name, self.docset.symbol_counts[name])
+
+        if self.section:
+            icon.set_from_icon_name(self.section.icon_name)
+            label.set_label(self.section.title)
+        else:
+            icon.set_from_icon_name("document")
+            label.set_label(name)
 
         self.search_changed()
 
