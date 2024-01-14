@@ -2,12 +2,12 @@ import sys
 from typing import cast
 
 from docoloco.config import APPLICATION_ID, default_config
-from .window.preferences import PreferencesWindow
+from .widgets.preferences import PreferencesWindow
 
 import gi
 
 from .registry import get_registry
-from .window import MainWindow
+from .widgets import MainWindow
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")

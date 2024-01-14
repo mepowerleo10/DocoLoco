@@ -2,7 +2,7 @@ import html
 import re
 from typing import cast
 from urllib.parse import unquote
-from ..locator import Locator
+from .locator import Locator
 
 import gi
 from bs4 import BeautifulSoup

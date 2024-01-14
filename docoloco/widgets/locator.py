@@ -1,14 +1,14 @@
 from enum import Enum
 from typing import Callable, cast
 
-from .helpers import is_valid_url
+from ..helpers import is_valid_url
 
-from .models.base import Section
+from ..models.base import Section
 
 import gi
 
-from .config import default_config
-from .models import Doc, DocSet
+from ..config import default_config
+from ..models import Doc, DocSet
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
