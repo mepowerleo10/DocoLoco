@@ -34,10 +34,6 @@ class MainWindow(Adw.ApplicationWindow):
 
         self.tab_view.connect("notify::title", self.on_tab_change)
         self.tab_view.connect("notify::selected-page", self.on_tab_change)
-
-        if self.tab_view.get_n_pages() == 0:
-            self.new_tab()
-
         # TODO: Setup tab_view signals for on-close
 
         self.popover_primary_menu = cast(
@@ -52,6 +48,9 @@ class MainWindow(Adw.ApplicationWindow):
         self.go_forward_action.connect("activate", self.go_forward)
         self.add_action(self.go_forward_action)
 
+        if self.tab_view.get_n_pages() == 0:
+            self.new_tab()
+
     def setup_style_context(self):
         css_provider = Gtk.CssProvider()
         css_provider.load_from_path(
@@ -62,13 +61,8 @@ class MainWindow(Adw.ApplicationWindow):
         )
 
     def setup_actions(self):
-        actions = []
-
-        for action in actions:
-            self.create_action(action)
-
-        parameterized_actions = [
-            ("new_tab", "<primary>T", lambda *_: self.new_tab(), None),
+        actions = [
+            ("open_new_tab", "<primary>T", self.open_new_tab, "i"),
             (
                 "page_search",
                 "<primary>F",
@@ -81,27 +75,36 @@ class MainWindow(Adw.ApplicationWindow):
             ("reset_zoom", "<primary>plus", self.reset_zoom, None),
             ("open_page", None, self.open_page, "s"),
             ("change_docset", None, self.change_docset, "(ssi)"),
+            ("open_in_new_tab", None, self.open_in_new_tab, "(sss)"),
             ("filter_docset", None, self.filter_docset, "s"),
             ("change_filter", None, self.change_filter, "s"),
         ]
 
-        for action in parameterized_actions:
+        for action in actions:
             self.create_action(action)
 
     @Gtk.Template.Callback()
-    def new_tab(self, *args, **kwargs):
-        docset = None
-        if "docset" in kwargs.keys():
-            docset = kwargs.pop("docset")
+    def new_tab(self, *args):
+        self.activate_action("win.open_new_tab", GLib.Variant.new_int32(-1))
 
-        doc_page = DocPage(docset=docset) if docset else DocPage()
-        self.add_tab(doc_page)
+    def open_new_tab(self, _, position_variant):
+        doc_page = DocPage()
+        position = position_variant.get_int32()
+        self.add_tab(
+            doc_page,
+            None if position == -1 else position,
+        )
 
     def add_tab(self, doc_page: DocPage, position: int = None):
+        page: Adw.TabPage = None
         if position:
             page = self.tab_view.insert(doc_page, position)
         else:
             page = self.tab_view.append(doc_page)
+
+        docset = doc_page.docset
+        if docset:
+            page.set_icon(docset.icon)
 
         doc_page.bind_property("title", page, "title", GObject.BindingFlags.DEFAULT)
         page.set_title(doc_page.title)
@@ -178,6 +181,20 @@ class MainWindow(Adw.ApplicationWindow):
         else:
             doc_page = self.selected_doc_page
             doc_page.load_uri(uri)
+
+    def open_in_new_tab(self, action, parameters):
+        if not (parameters or action):
+            return
+
+        url, provider_id, docset_name = parameters.unpack()
+
+        position = self.tab_view.get_page_position(self.tab_view.get_selected_page())
+        self.activate_action("win.open_new_tab", GLib.Variant.new_int32(position + 1))
+        self.activate_action(
+            "win.change_docset",
+            GLib.Variant("(ssi)", (provider_id, docset_name, 0)),
+        )
+        self.activate_action("win.open_page", GLib.Variant.new_string(url))
 
     def doc_page(self, pos: int) -> DocPage:
         adw_page = self.tab_view.get_nth_page(pos)

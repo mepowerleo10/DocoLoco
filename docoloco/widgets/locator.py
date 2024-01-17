@@ -1,14 +1,14 @@
 from enum import Enum
 from typing import Callable, cast
 
-from .helpers import is_valid_url
+from ..helpers import is_valid_url
 
-from .models.base import Section
+from ..models.base import Section
 
 import gi
 
-from .config import default_config
-from .models import Doc, DocSet
+from ..config import default_config
+from ..models import Doc, DocSet
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
@@ -66,6 +66,9 @@ class Locator(Adw.Bin):
         self.section: Section = None
 
         self.search_result_model = Gio.ListStore(item_type=SearchResult)
+        self.search_result_model.connect(
+            "items-changed", self.on_search_result_items_changed
+        )
 
         self.entry.connect("activate", self.toggle_focus)
         self.entry.connect("changed", lambda _: self.search_changed())
@@ -83,6 +86,8 @@ class Locator(Adw.Bin):
         self.results_view.set_factory(view_factory)
         self.results_view.connect("activate", lambda _, i: self.entry_activated(pos=i))
         self.popover.set_parent(self.search_box)
+
+        self.docset_btn.connect("clicked", self.on_click_docset_btn)
 
     def setup_search_result(self, factory, obj: GObject.Object):
         list_item = cast(Gtk.ListItem, obj)
@@ -186,6 +191,7 @@ class Locator(Adw.Bin):
             )
 
             menu = Gio.Menu()
+            menu.append("All", f"win.change_filter({GLib.Variant.new_string("All")})")
             for name, count in self.docset.symbol_counts.items():
                 menu.append(name, f"win.change_filter({GLib.Variant.new_string(name)})")
 
@@ -196,21 +202,35 @@ class Locator(Adw.Bin):
             self.entry.set_placeholder_text("Press Ctrl+P to filter docsets")
 
     def toggle_focus(self, *args):
-        self.popover.set_visible(not self.popover.get_visible())
         self.entry.grab_focus()
+        if self.docset and self.search_result_model.get_n_items() > 0:
+            self.popover.set_visible(not self.popover.get_visible())
 
     def on_click_docset_btn(self, *args):
         if self.docset:
             variant = GLib.Variant.new_string(self.docset.index_file_path.as_uri())
             self.activate_action("win.open_page", variant)
 
+    def on_search_result_items_changed(self, *args):
+        if self.search_result_model.get_n_items() > 0:
+            self.popover.set_visible(True)
+        else:
+            self.popover.set_visible(False)
+
     def change_filter(self, name: str):
         icon: Gtk.Image = self.section_btn.get_child().get_first_child()
         label: Gtk.Label = self.section_btn.get_child().get_last_child()
 
-        self.section = Section(name, self.docset.symbol_counts[name])
-        icon.set_from_icon_name(self.section.icon_name)
-        label.set_label(self.section.title)
+        self.section = (
+            None if "All" in name else Section(name, self.docset.symbol_counts[name])
+        )
+
+        if self.section:
+            icon.set_from_icon_name(self.section.icon_name)
+            label.set_label(self.section.title)
+        else:
+            icon.set_from_icon_name("document")
+            label.set_label(name)
 
         self.search_changed()
 

@@ -33,6 +33,7 @@ class DocumentationProvider(GObject.Object):
         self.docs: Dict[str, DocSet] = dict()
         self.root_path: Path = None
         self.type = self.Type.PRELOADED
+        self.icon_path: str = None
 
         self.query_results_model = Gio.ListStore(item_type=DocSet)
 
@@ -50,3 +51,12 @@ class DocumentationProvider(GObject.Object):
 
     def get_view(self) -> Gtk.Widget:
         ...
+
+    @property
+    def icon(self) -> Gio.Icon:
+        if self.icon_path:
+            icon = Gio.FileIcon.new_for_string(self.icon_path)
+        else:
+            icon = Gio.icon_new_for_string("accessories-dictionary-symbolic")
+
+        return icon

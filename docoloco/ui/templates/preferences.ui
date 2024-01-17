@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.16.0 -->
+<interface>
+  <requires lib="gtk" version="4.12"/>
+  <requires lib="libadwaita" version="1.4"/>
+  <template class="PreferencesWindow" parent="AdwPreferencesWindow">
+    <property name="can-navigate-back">True</property>
+    <child>
+      <object class="AdwPreferencesPage" id="dash_page">
+        <property name="icon-name">accessories-dictionary-symbolic</property>
+        <property name="name">dash</property>
+        <property name="title">Dash</property>
+        <child>
+          <object class="AdwPreferencesGroup">
+            <child>
+              <object class="AdwActionRow">
+                <property name="title">Show All Docsets</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title">Add Docset</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwExpanderRow">
+                <property name="subtitle">Uses dashing and wget</property>
+                <property name="title">Build Docset</property>
+                <child>
+                  <object class="GtkBox">
+                    <property name="orientation">vertical</property>
+                    <property name="spacing">4</property>
+                    <child>
+                      <object class="AdwEntryRow" id="url_entry">
+                        <property name="activates-default">True</property>
+                        <property name="input-purpose">url</property>
+                        <property name="show-apply-button">True</property>
+                        <property name="title">URL</property>
+                        <signal name="apply" handler="on_url_apply"/>
+                        <signal name="changed" handler="on_url_changed"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="download_btn">
+                        <property name="halign">center</property>
+                        <property name="label">Download Site</property>
+                        <property name="margin-bottom">4</property>
+                        <property name="margin-end">4</property>
+                        <property name="margin-start">4</property>
+                        <property name="margin-top">4</property>
+                        <property name="visible">False</property>
+                        <signal name="clicked" handler="on_click_download"/>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="AdwPreferencesPage" id="man_page">
+        <property name="icon-name">accessories-dictionary-symbolic</property>
+        <property name="name">man</property>
+        <property name="title">Man</property>
+      </object>
+    </child>
+  </template>
+</interface>

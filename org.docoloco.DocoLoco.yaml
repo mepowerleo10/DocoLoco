@@ -8,6 +8,8 @@ tags:
 sdk: org.gnome.Sdk
 command: docoloco
 build-options:
+  env:
+    - PYTHON=python3.12
   build-args:
   - --share=network
   test-args:
@@ -23,12 +25,16 @@ finish-args:
 - --filesystem=xdg-cache/DocoLoco:create
 - --filesystem=xdg-data/Zeal:ro
 modules:
+- name: python3.12
+  sources:
+    - type: archive
+      url: https://www.python.org/ftp/python/3.12.1/Python-3.12.1.tar.xz
 - name: install
   buildsystem: simple
   build-commands:
   - ls $(which python3)*
-  - pip3 install --prefix=${FLATPAK_DEST} docoloco-0.1.0-py3-none-any.whl
+  - pip3 install --prefix=${FLATPAK_DEST} docoloco-0.2.0-py3-none-any.whl
   sources:
   - type: file
-    path: dist/docoloco-0.1.0-py3-none-any.whl
+    path: dist/docoloco-0.2.0-py3-none-any.whl
     

@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.16.0 -->
+<interface>
+  <requires lib="libadwaita" version="1.2"/>
+  <object class="AdwAboutWindow" id="about">
+    <property name="application-name">DocoLoco</property>
+    <property name="copyright">© 2023 Mussa Mipawa Shomari</property>
+    <property name="developer-name">Mussa Mipawa Shomari</property>
+    <property name="license-type">mit-x11</property>
+    <property name="website">https://github.com/mepowerleo10/DocoLoco</property>
+  </object>
+</interface>

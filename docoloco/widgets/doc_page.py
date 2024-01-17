@@ -2,7 +2,7 @@ import html
 import re
 from typing import cast
 from urllib.parse import unquote
-from ..locator import Locator
+from .locator import Locator
 
 import gi
 from bs4 import BeautifulSoup
@@ -177,6 +177,12 @@ class DocPage(Adw.Bin):
         label.connect("activate-link", self._on_related_link_clicked)
         label.connect("activate-current-link", self._on_related_link_clicked)
 
+        menu = Gio.Menu()
+        menu.append(
+            "Open In New Tab",
+            f"win.open_in_new_tab({GLib.Variant("(sss)", (doc.url, self.docset.provider_id, self.docset.name))})",
+        )
+        label.set_extra_menu(menu)
 
     def _on_related_link_clicked(self, label: Gtk.Label, path: str, *args):
         label.stop_emission_by_name("activate-link")
@@ -279,12 +285,12 @@ class DocPage(Adw.Bin):
             context_menu.insert(open_in_new_tab_item, 1)
 
     def _on_open_in_new_tab(self, action, url):
-        self.activate_action("win.new_tab")
         self.activate_action(
-            "win.change_docset",
-            GLib.Variant("(ssi)", (self.docset.provider_id, self.docset.name, 0)),
+            "win.open_in_new_tab",
+            GLib.Variant(
+                "(sss)", (url.get_string(), self.docset.provider_id, self.docset.name)
+            ),
         )
-        self.activate_action("win.open_page", url)
 
     def setup_search_signals(self):
         self.search_bar.connect_entry(self.search_entry)

@@ -28,8 +28,11 @@ class ProvidersListPage(Adw.NavigationPage):
         for name, provider in providers.items():
             action_row = Adw.ActionRow()
             action_row.set_title(name)
-            action_row.set_icon_name("accessories-dictionary-symbolic")
 
+            icon = Gtk.Image()
+            icon.set_from_gicon(provider.icon)
+            action_row.add_prefix(icon)
+            
             button = Gtk.Button()
             action_row.set_activatable_widget(button)
 
