@@ -66,6 +66,9 @@ class Locator(Adw.Bin):
         self.section: Section = None
 
         self.search_result_model = Gio.ListStore(item_type=SearchResult)
+        self.search_result_model.connect(
+            "items-changed", self.on_search_result_items_changed
+        )
 
         self.entry.connect("activate", self.toggle_focus)
         self.entry.connect("changed", lambda _: self.search_changed())
@@ -200,7 +203,7 @@ class Locator(Adw.Bin):
 
     def toggle_focus(self, *args):
         self.entry.grab_focus()
-        if self.docset:
+        if self.docset and self.search_result_model.get_n_items() > 0:
             self.popover.set_visible(not self.popover.get_visible())
 
     def on_click_docset_btn(self, *args):
@@ -208,11 +211,19 @@ class Locator(Adw.Bin):
             variant = GLib.Variant.new_string(self.docset.index_file_path.as_uri())
             self.activate_action("win.open_page", variant)
 
+    def on_search_result_items_changed(self, *args):
+        if self.search_result_model.get_n_items() > 0:
+            self.popover.set_visible(True)
+        else:
+            self.popover.set_visible(False)
+
     def change_filter(self, name: str):
         icon: Gtk.Image = self.section_btn.get_child().get_first_child()
         label: Gtk.Label = self.section_btn.get_child().get_last_child()
 
-        self.section = None if "All" in name else Section(name, self.docset.symbol_counts[name])
+        self.section = (
+            None if "All" in name else Section(name, self.docset.symbol_counts[name])
+        )
 
         if self.section:
             icon.set_from_icon_name(self.section.icon_name)
