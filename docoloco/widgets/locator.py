@@ -145,13 +145,14 @@ class Locator(Adw.Bin):
             )
 
         if self.search_result_model.get_n_items() == 0:
+            query = f"\"{self.docset.name}\" {text}"
             google_item = SearchResult(
                 FilterType.DOC_ENTRY,
                 title=f"Google - {text}",
                 icon_name="web-browser-symbolic",
                 has_child=False,
                 on_select=self.on_select_doc_entry,
-                callback_args={"url": f"https://google.com/search?q={text}"},
+                callback_args={"url": f"https://google.com/search?q={query}"},
             )
             self.search_result_model.append(google_item)
 
