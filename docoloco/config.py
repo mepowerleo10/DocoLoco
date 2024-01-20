@@ -1,9 +1,7 @@
-import json
 import shutil
 from pathlib import Path
 
 import yaml
-
 from gi.repository import GLib
 
 APPLICATION_ID = "org.docoloco.DocoLoco"

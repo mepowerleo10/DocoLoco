@@ -145,7 +145,7 @@ class Locator(Adw.Bin):
             )
 
         if self.search_result_model.get_n_items() == 0:
-            query = f"\"{self.docset.name}\" {text}"
+            query = f'"{self.docset.name}" {text}'
             google_item = SearchResult(
                 FilterType.DOC_ENTRY,
                 title=f"Google - {text}",
@@ -215,8 +215,6 @@ class Locator(Adw.Bin):
     def on_search_result_items_changed(self, *args):
         if self.search_result_model.get_n_items() > 0:
             self.popover.set_visible(True)
-        else:
-            self.popover.set_visible(False)
 
     def change_filter(self, name: str):
         icon: Gtk.Image = self.section_btn.get_child().get_first_child()

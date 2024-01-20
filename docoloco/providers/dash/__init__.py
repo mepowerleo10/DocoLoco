@@ -250,7 +250,7 @@ class DashDocSet(DocSet):
 
             where_conditions = f"{where_conditions} AND ({"OR ".join(symbols_aka)})"
 
-        query = f"SELECT {columns_to_select} FROM {self.table_name} WHERE {where_conditions} LIMIT 20"
+        query = f"SELECT {columns_to_select} FROM {self.table_name} WHERE {where_conditions} LIMIT 100"
         rows: sqlite3.Cursor = self.con.cursor().execute(query)
 
         results: List[Doc] = []
