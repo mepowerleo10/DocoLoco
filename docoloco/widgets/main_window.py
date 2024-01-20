@@ -62,26 +62,53 @@ class MainWindow(Adw.ApplicationWindow):
 
     def setup_actions(self):
         actions = [
-            ("open_new_tab", "<primary>T", self.open_new_tab, "i"),
+            # (action_name, method_to_call, argument_types, shortcut, shortcut_arguments)
+            (
+                "open_new_tab",
+                self.open_new_tab,
+                "i",
+                "<primary>T",
+                f"({GLib.Variant.new_int32(-1)})",
+            ),
             (
                 "page_search",
-                "<primary>F",
                 lambda *_: self.selected_doc_page.page_search(),
                 None,
+                "<primary>F",
+                None,
             ),
-            ("focus_locator", "<primary>P", self.focus_locator, None),
-            ("zoom_in", "<primary>equal", self.zoom_in, None),
-            ("zoom_out", "<primary>minus", self.zoom_out, None),
-            ("reset_zoom", "<primary>plus", self.reset_zoom, None),
-            ("open_page", None, self.open_page, "s"),
-            ("change_docset", None, self.change_docset, "(ssi)"),
-            ("open_in_new_tab", None, self.open_in_new_tab, "(sss)"),
-            ("filter_docset", None, self.filter_docset, "s"),
-            ("change_filter", None, self.change_filter, "s"),
+            ("focus_locator", self.focus_locator, None, "<primary>P", None),
+            ("zoom_in", self.zoom_in, None, "<primary>equal", None),
+            ("zoom_out", self.zoom_out, None, "<primary>minus", None),
+            ("reset_zoom", self.reset_zoom, None, "<primary>plus", None),
+            ("open_page", self.open_page, "s", None, None),
+            ("change_docset", self.change_docset, "(ssi)", None, None),
+            ("open_in_new_tab", self.open_in_new_tab, "(sss)", None, None),
+            ("filter_docset", self.filter_docset, "s", None, None),
+            ("change_filter", self.change_filter, "s", None, None),
+            ("close_tab", self.close_tab, None, "<primary>W", None),
+            ("go_back", self.go_back, None, "<secondary>Left", None),
+            ("go_forward", self.go_forward, None, "<secondary>Right", None),
         ]
 
         for action in actions:
             self.create_action(action)
+
+    def create_action(self, action_desc: Tuple[str, str, Callable, str]):
+        name, on_activate, parameter_type, shortcut, shortcut_args = action_desc
+        g_action = Gio.SimpleAction(
+            name=name,
+            parameter_type=(
+                GLib.VariantType.new(parameter_type) if parameter_type else None
+            ),
+        )
+        g_action.connect("activate", on_activate)
+        self.add_action(g_action)
+
+        if shortcut:
+            self.app.set_accels_for_action(
+                f"win.{name}{shortcut_args if shortcut_args else ''}", [shortcut]
+            )
 
     @Gtk.Template.Callback()
     def new_tab(self, *args):
@@ -97,7 +124,7 @@ class MainWindow(Adw.ApplicationWindow):
 
     def add_tab(self, doc_page: DocPage, position: int = None):
         page: Adw.TabPage = None
-        if position:
+        if position is not None:
             page = self.tab_view.insert(doc_page, position)
         else:
             page = self.tab_view.append(doc_page)
@@ -196,6 +223,14 @@ class MainWindow(Adw.ApplicationWindow):
         )
         self.activate_action("win.open_page", GLib.Variant.new_string(url))
 
+    def close_tab(self, action, *parameters):
+        self.tab_view.close_page(
+            self.tab_view.get_selected_page(),
+        )
+
+        if self.tab_view.get_n_pages() == 0:
+            self.new_tab()
+
     def doc_page(self, pos: int) -> DocPage:
         adw_page = self.tab_view.get_nth_page(pos)
 
@@ -207,17 +242,3 @@ class MainWindow(Adw.ApplicationWindow):
 
         if page:
             return page.get_child()
-
-    def create_action(self, action_desc: Tuple[str, str, Callable, str]):
-        name, shortcut, on_activate, parameter_type = action_desc
-        g_action = Gio.SimpleAction(
-            name=name,
-            parameter_type=(
-                GLib.VariantType.new(parameter_type) if parameter_type else None
-            ),
-        )
-        g_action.connect("activate", on_activate)
-        self.add_action(g_action)
-
-        if shortcut:
-            self.app.set_accels_for_action(f"win.{name}", [shortcut])
