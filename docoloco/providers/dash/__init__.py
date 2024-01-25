@@ -5,20 +5,20 @@ from collections import OrderedDict, namedtuple
 from enum import Enum
 from pathlib import Path
 from typing import Dict, List
-from .views import DashDocsetsView
 
 from gi.repository.Gio import ListStore
 
-from docoloco.config import default_config
 from docoloco.models import Doc, DocSet
 from docoloco.providers import DocumentationProvider
 
+from .views import DashDocsetsView
+
 
 class DashProvider(DocumentationProvider):
-    def __init__(self) -> None:
+    def __init__(self, name: str, root_path: Path) -> None:
         super().__init__()
-        self.name = "Dash"
-        self.root_path = default_config.user_data_dir / "Zeal/Zeal/docsets/"
+        self.name = name
+        self.root_path = root_path
 
     def load(self):
         for doc_path in self.root_path.iterdir():
