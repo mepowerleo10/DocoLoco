@@ -9,7 +9,7 @@ sdk: org.gnome.Sdk
 command: docoloco
 build-options:
   env:
-    - PYTHON=python3.12
+    - PYTHON=python3.11
   build-args:
   - --share=network
   test-args:
@@ -40,4 +40,11 @@ modules:
   sources:
   - type: file
     path: dist/docoloco-0.2.0-py3-none-any.whl
-    
+- name: copy desktop file
+  buildsystem: simple
+  build-commands:
+  - mkdir -p ${FLATPAK_DEST}/share/applications
+  - cp com.mepowerleo10.docoloco.desktop ${FLATPAK_DEST}/share/applications/org.docoloco.DocoLoco.Devel.desktop
+  sources:
+  - type: file
+    path: data/com.mepowerleo10.docoloco.desktop
