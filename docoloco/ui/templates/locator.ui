@@ -38,7 +38,9 @@
     <property name="halign">center</property>
     <property name="name">locator</property>
     <child>
-      <object class="GtkBox">
+      <object class="GtkBox" id="search_box">
+        <property name="css-classes">search-box</property>
+        <property name="css-name">entry</property>
         <child>
           <object class="GtkButton" id="docset_btn">
             <child>
@@ -79,17 +81,16 @@
           </object>
         </child>
         <child>
-          <object class="GtkBox" id="search_box">
-            <child>
-              <object class="GtkEntry" id="locator_entry">
-                <property name="focusable">True</property>
-                <property name="placeholder-text">Press Ctrl+P to search a documentation</property>
-                <property name="primary-icon-name">system-search-symbolic</property>
-                <property name="secondary-icon-name">edit-clear-symbolic</property>
-                <property name="valign">center</property>
-                <property name="width-request">450</property>
-              </object>
-            </child>
+          <object class="GtkEntry" id="locator_entry">
+            <property name="accessible-role">text-box</property>
+            <property name="css-classes">locator-entry</property>
+            <property name="css-name">text</property>
+            <property name="focusable">True</property>
+            <property name="placeholder-text">Press Ctrl+P to search a documentation</property>
+            <property name="primary-icon-name">system-search-symbolic</property>
+            <property name="secondary-icon-name">edit-clear-symbolic</property>
+            <property name="valign">center</property>
+            <property name="width-request">450</property>
           </object>
         </child>
       </object>

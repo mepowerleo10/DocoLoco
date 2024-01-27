@@ -1,9 +1,10 @@
 from typing import Dict, List
 
-from .models import Doc, DocSet
-from .providers import DocumentationProvider
-from .providers.dash import DashProvider
-from .providers.man import ManProvider
+from docoloco.config import default_config
+from docoloco.models import Doc, DocSet
+from docoloco.providers import DocumentationProvider
+from docoloco.providers.dash import DashProvider
+from docoloco.providers.man import ManProvider
 
 
 class Registry:
@@ -12,7 +13,10 @@ class Registry:
 
     def __init__(self) -> None:
         registered_providers: List[DocumentationProvider] = [
-            DashProvider(),
+            DashProvider(
+                name="Zeal",
+                root_path=default_config.user_data_dir / "Zeal/Zeal/docsets/",
+            ),
             ManProvider(),
         ]
 
