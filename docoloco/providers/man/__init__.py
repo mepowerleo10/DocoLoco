@@ -133,7 +133,7 @@ class ManDocSet(DocSet):
             heading_elements = section.find_all("h1", {"id": True})
             for heading in heading_elements:
                 symbols[heading.get_text(strip=True).replace("\n", "")] = (
-                    self.index_file_path / f"#{heading["id"]}"
+                    self.index_file_path / f"#{heading['id']}"
                 ).as_uri()
 
         with open(self.metadata_path, "w") as metadata_file:
