@@ -225,7 +225,7 @@ class DashDocSet(DocSet):
 
         columns_to_select = self.get_columns()
 
-        query = f"SELECT {columns_to_select} FROM {self.table_name} WHERE {"OR ".join(like_conditions)} LIMIT {page_size} OFFSET {offset}"
+        query = f"SELECT {columns_to_select} FROM {self.table_name} WHERE {'OR '.join(like_conditions)} LIMIT {page_size} OFFSET {offset}"
         rows = self.con.cursor().execute(query)
 
         for row in rows.fetchall():
@@ -248,7 +248,7 @@ class DashDocSet(DocSet):
             for aka in self.symbol_strings[section]:
                 symbols_aka.append(f"type LIKE '%{aka}%'")
 
-            where_conditions = f"{where_conditions} AND ({"OR ".join(symbols_aka)})"
+            where_conditions = f"{where_conditions} AND ({'OR '.join(symbols_aka)})"
 
         query = f"SELECT {columns_to_select} FROM {self.table_name} WHERE {where_conditions} LIMIT 100"
         rows: sqlite3.Cursor = self.con.cursor().execute(query)

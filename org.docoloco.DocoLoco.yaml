@@ -9,7 +9,7 @@ sdk: org.gnome.Sdk
 command: docoloco
 build-options:
   env:
-    - PYTHON=python3.12
+    - PYTHON=python3.11
   build-args:
   - --share=network
   test-args:
@@ -18,23 +18,33 @@ finish-args:
 - --socket=fallback-x11
 - --share=ipc
 - --socket=wayland
+- --share=network
 - --device=dri
 - --socket=session-bus
 - --talk-name=org.gtk.vfs.*
 - --filesystem=xdg-run/gvfsd
 - --filesystem=xdg-cache/DocoLoco:create
 - --filesystem=xdg-data/Zeal:ro
+- --filesystem=/usr/share/man:ro
 modules:
-- name: python3.12
-  sources:
-    - type: archive
-      url: https://www.python.org/ftp/python/3.12.1/Python-3.12.1.tar.xz
+# - name: mandoc
+#   sources: 
+#     - type: archive
+#       url: https://mandoc.bsd.lv/snapshots/mandoc.tar.gz
+#       sha256: 8bf0d570f01e70a6e124884088870cbed7537f36328d512909eb10cd53179d9c
 - name: install
   buildsystem: simple
   build-commands:
-  - ls $(which python3)*
+  - python --version
   - pip3 install --prefix=${FLATPAK_DEST} docoloco-0.2.0-py3-none-any.whl
   sources:
   - type: file
     path: dist/docoloco-0.2.0-py3-none-any.whl
-    
+- name: copy desktop file
+  buildsystem: simple
+  build-commands:
+  - mkdir -p ${FLATPAK_DEST}/share/applications
+  - cp com.mepowerleo10.docoloco.desktop ${FLATPAK_DEST}/share/applications/org.docoloco.DocoLoco.Devel.desktop
+  sources:
+  - type: file
+    path: data/com.mepowerleo10.docoloco.desktop

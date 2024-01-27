@@ -180,7 +180,7 @@ class DocPage(Adw.Bin):
         menu = Gio.Menu()
         menu.append(
             "Open In New Tab",
-            f"win.open_in_new_tab({GLib.Variant("(sss)", (doc.url, self.docset.provider_id, self.docset.name))})",
+            f"win.open_in_new_tab({GLib.Variant('(sss)', (doc.url, self.docset.provider_id, self.docset.name))})",
         )
         label.set_extra_menu(menu)
 
@@ -235,7 +235,7 @@ class DocPage(Adw.Bin):
         resource_path: str = current_uri.split("#")[0]
         if resource_path.startswith("file://"):
             resource_path = resource_path.replace("file://", "")
-            with open(resource_path, "r+") as resource:
+            with open(resource_path, "r") as resource:
                 soup = BeautifulSoup(resource, "html.parser")
                 for xml_tag in soup.find_all(
                     "xml"
