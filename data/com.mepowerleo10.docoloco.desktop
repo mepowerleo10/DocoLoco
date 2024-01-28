@@ -2,7 +2,6 @@
 Type=Application
 Version=1.0
 Name=DocoLoco
-Comment=Development Documentaion Browser
-Path=<path-to>/DocoLoco
-Exec=python -m docoloco
+Comment=Development Documentation Browser
+Exec=
 Terminal=false

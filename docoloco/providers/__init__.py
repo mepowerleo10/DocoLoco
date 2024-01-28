@@ -13,7 +13,7 @@ from gi.repository import Gio, GObject, Gtk  # noqa: E402
 T = TypeVar("T")
 
 
-class DocumentationProviderView[T](Protocol):
+class DocumentationProviderView(Protocol):
     def filter_or_find(self, value: str):
         ...
 

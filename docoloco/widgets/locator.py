@@ -192,7 +192,7 @@ class Locator(Adw.Bin):
             )
 
             menu = Gio.Menu()
-            menu.append("All", f"win.change_filter({GLib.Variant.new_string("All")})")
+            menu.append("All", f"win.change_filter({GLib.Variant.new_string('All')})")
             for name, count in self.docset.symbol_counts.items():
                 menu.append(name, f"win.change_filter({GLib.Variant.new_string(name)})")
 

@@ -65,6 +65,41 @@ To get started with DocoLoco, follow these steps:
 
    Ensure that Zeal is installed on your system. You can download Zeal from [https://zealdocs.org/](https://zealdocs.org/).
 
+## Flatpak Version Installation
+
+1. **Clone the Repository:**
+
+   ```bash
+   git clone https://github.com/your-username/DocoLoco.git
+   cd DocoLoco
+   ```
+
+2. **Install Poetry:**
+
+   If you haven't installed Poetry, you can do so using the following:
+
+   ```bash
+   curl -sSL https://install.python-poetry.org | python3 -
+   ```
+
+   Or refer to the [official Poetry installation guide](https://python-poetry.org/docs/#installation) for more options.
+
+3. **Install Zeal:**
+
+   Ensure that Zeal is installed on your system. You can download Zeal from [https://zealdocs.org/](https://zealdocs.org/).
+
+
+4. **Install the Flatpak package**
+
+   Run the following command to install the flatpak command:
+   ```
+   flatpak-builder build-dir org.docoloco.DocoLoco.yaml --install --user --force-clean 
+   ```
+   That's it! You can find the app in you apps menu now. Or run this command to open it from the command line:
+   ```
+   flatpak run org.docoloco.DocoLoco.Devel
+   ```
+
 ## Running the Project
 
 Now that you have the project and its dependencies installed, you can run DocoLoco using the following steps:

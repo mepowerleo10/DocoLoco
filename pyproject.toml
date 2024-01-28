@@ -7,13 +7,13 @@ readme = "README.md"
 repository = "https://github.com/mepowerleo10/DocoLoco"
 
 [tool.poetry.dependencies]
-python = "^3.12"
-pygobject = "^3.46.0"
-beautifulsoup4 = "^4.12.2"
-pyyaml = "^6.0.1"
+python = "^3.11"
+PyGObject = "^3.46.0"
+beautifulsoup4 = "^4.12.3"
+PyYAML = "^6.0.1"
 
 [tool.poetry.group.dev.dependencies]
-pygobject-stubs = "^2.10.0"
+PyGObject-stubs = "^2.10.0"
 
 [tool.poetry.scripts]
 docoloco = "docoloco.__main__:main"

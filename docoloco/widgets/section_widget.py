@@ -88,7 +88,7 @@ class SectionWidget(Adw.Bin):
         menu = Gio.Menu()
         menu.append(
             "Open In New Tab",
-            f"win.open_in_new_tab({GLib.Variant("(sss)", (doc.url, self.docset.provider_id, self.docset.name))})",
+            f"win.open_in_new_tab({GLib.Variant('(sss)', (doc.url, self.docset.provider_id, self.docset.name))})",
         )
         label.set_extra_menu(menu)
 
