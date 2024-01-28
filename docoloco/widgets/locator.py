@@ -1,46 +1,16 @@
-from enum import Enum
-from typing import Callable, cast
-
-from ..helpers import is_valid_url
-
-from ..models.base import Section
+from typing import cast
 
 import gi
 
 from ..config import default_config
 from ..models import Doc, DocSet
+from ..models.base import Section
+from ..providers import DocumentationProvider
+from ..search import SearchProvider, SearchResult
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gio, GLib, GObject, Gtk  # noqa: E402
-
-
-class FilterType(Enum):
-    DOCSET = 1
-    SECTION = 2
-    DOC_ENTRY = 3
-
-
-class SearchResult(GObject.Object):
-    __gtype_name__ = "SearchResult"
-
-    def __init__(
-        self,
-        item_type: FilterType,
-        title: str,
-        icon_name: str,
-        has_child: bool,
-        on_select: Callable,
-        callback_args,
-    ) -> None:
-        super().__init__()
-
-        self.item_type = item_type
-        self.title = title
-        self.icon_name = icon_name
-        self.has_child = has_child
-        self.on_select = on_select
-        self.callback_args = callback_args
 
 
 @Gtk.Template(filename=default_config.template("locator"))
@@ -57,15 +27,11 @@ class Locator(Adw.Bin):
     section_btn: Adw.SplitButton = Gtk.Template.Child()
     search_box = cast(Gtk.Box, Gtk.Template.Child())
 
-    # docset: DocSet = None
-
-    def __init__(self, docset: DocSet = None):
+    def __init__(self):
         super().__init__()
 
-        self.docset = docset
-        self.section: Section = None
+        self.search_provider = SearchProvider()
 
-        self.search_result_model = Gio.ListStore(item_type=SearchResult)
         self.search_result_model.connect(
             "items-changed", self.on_search_result_items_changed
         )
@@ -119,54 +85,13 @@ class Locator(Adw.Bin):
         text = text.strip().lower()
 
         if self.docset:
-            self.search_docset(text)
+            self.search_provider.search(text)
         else:
             variant = GLib.Variant.new_string(text)
             self.activate_action("win.filter_docset", variant)
 
     def search_docset(self, text: str):
-        self.search_result_model.remove_all()
-
-        results = (
-            self.docset.search(text, self.section.title)
-            if self.section
-            else self.docset.search(text)
-        )
-        for item in results:
-            self.search_result_model.append(
-                SearchResult(
-                    FilterType.DOC_ENTRY,
-                    item.name,
-                    item.icon_name,
-                    False,
-                    on_select=self.on_select_doc_entry,
-                    callback_args={"url": item.url},
-                )
-            )
-
-        if self.search_result_model.get_n_items() == 0:
-            query = f'"{self.docset.name}" {text}'
-            google_item = SearchResult(
-                FilterType.DOC_ENTRY,
-                title=f"Google - {text}",
-                icon_name="web-browser-symbolic",
-                has_child=False,
-                on_select=self.on_select_doc_entry,
-                callback_args={"url": f"https://google.com/search?q={query}"},
-            )
-            self.search_result_model.append(google_item)
-
-        if is_valid_url(text):
-            url_link_item = SearchResult(
-                item_type=FilterType.DOC_ENTRY,
-                title=f"Open Link - {text}",
-                icon_name="emblem-symbolic-link",
-                has_child=False,
-                on_select=self.on_select_doc_entry,
-                callback_args={"url": text},
-            )
-            self.search_result_model.insert(0, url_link_item)
-
+        # TODO: Add link this method with SearcProvider
         self.popover.set_visible(True)
 
     def entry_activated(self, pos: int = None, result: Doc = None):
@@ -174,15 +99,26 @@ class Locator(Adw.Bin):
         result: SearchResult = self.search_result_model.get_item(pos)
 
         if result:
-            result.on_select(**result.callback_args)
+            action_name, action_args = result.action_name, result.action_args
+            self.activate_action(action_name, action_args)
+        
+        self.toggle_focus()
 
     def on_select_doc_entry(self, url: str):
         variant = GLib.Variant.new_string(url)
         self.activate_action("win.open_page", variant)
         self.toggle_focus()
 
-    def set_docset(self, docset: DocSet):
-        self.docset = docset
+    def set_provider(self, provider: DocumentationProvider):
+        self.search_provider.provider = provider
+
+    @property
+    def docset(self) -> DocSet:
+        return self.search_provider.docset
+
+    @docset.setter
+    def docset(self, docset: DocSet):
+        self.search_provider.docset = docset
 
         if docset:
             self.docset_label.set_label(docset.title)
@@ -201,6 +137,14 @@ class Locator(Adw.Bin):
             self.docset_label.set_label("DocSet")
             self.docset_icon.set_from_icon_name("accessories-dictionary-symbolic")
             self.entry.set_placeholder_text("Press Ctrl+P to filter docsets")
+
+    @property
+    def section(self) -> Section:
+        return self.search_provider.section
+
+    @section.setter
+    def section(self, section: Section):
+        self.search_provider.section = section
 
     def toggle_focus(self, *args):
         self.entry.grab_focus()
@@ -236,3 +180,7 @@ class Locator(Adw.Bin):
     def on_icon_pressed(self, entry, icon_position: Gtk.EntryIconPosition, *data):
         if icon_position == Gtk.EntryIconPosition.SECONDARY:
             self.entry.set_text("")
+
+    @property
+    def search_result_model(self) -> Gio.ListStore:
+        return self.search_provider.result
