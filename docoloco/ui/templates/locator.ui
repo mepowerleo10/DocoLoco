@@ -40,7 +40,6 @@
     <child>
       <object class="GtkBox" id="search_box">
         <property name="css-classes">search-box</property>
-        <property name="css-name">entry</property>
         <child>
           <object class="GtkButton" id="docset_btn">
             <child>
@@ -84,7 +83,7 @@
           <object class="GtkEntry" id="locator_entry">
             <property name="accessible-role">text-box</property>
             <property name="css-classes">locator-entry</property>
-            <property name="css-name">text</property>
+            <property name="css-name">entry</property>
             <property name="focusable">True</property>
             <property name="placeholder-text">Press Ctrl+P to search a documentation</property>
             <property name="primary-icon-name">system-search-symbolic</property>

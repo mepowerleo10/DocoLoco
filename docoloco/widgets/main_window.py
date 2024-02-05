@@ -82,13 +82,14 @@ class MainWindow(Adw.ApplicationWindow):
             ("zoom_out", self.zoom_out, None, "<primary>minus", None),
             ("reset_zoom", self.reset_zoom, None, "<primary>plus", None),
             ("open_page", self.open_page, "s", None, None),
+            ("open_page_uri", self.open_page_uri, "s", None, None),
             ("change_docset", self.change_docset, "(ssi)", None, None),
             ("open_in_new_tab", self.open_in_new_tab, "(sss)", None, None),
             ("filter_docset", self.filter_docset, "s", None, None),
             ("change_filter", self.change_filter, "s", None, None),
             ("close_tab", self.close_tab, None, "<primary>W", None),
-            ("go_back", self.go_back, None, "<secondary>Left", None),
-            ("go_forward", self.go_forward, None, "<secondary>Right", None),
+            ("go_back", self.go_back, None, "<Alt>Left", None),
+            ("go_forward", self.go_forward, None, "<Alt>Right", None),
         ]
 
         for action in actions:
@@ -180,6 +181,11 @@ class MainWindow(Adw.ApplicationWindow):
     def filter_docset(self, action=None, name: GLib.Variant = None):
         self.selected_doc_page.filter_docset(name.get_string())
 
+    def change_provider(self, action, provider_id):
+        provider = get_registry().providers[provider_id]
+        if provider:
+            self.selected_doc_page.locator.set_provider(provider)
+
     def change_docset(self, action, parameters):
         if not (parameters or action):
             return
@@ -199,9 +205,10 @@ class MainWindow(Adw.ApplicationWindow):
 
     def open_page(self, action=None, variant: GLib.Variant = None):
         if variant:
-            self.open_page_uri(variant.get_string())
+            self.open_page_uri(None, variant)
 
-    def open_page_uri(self, uri: str):
+    def open_page_uri(self, action, uri_variant: GLib.Variant):
+        uri = uri_variant.get_string()
         if not self.tab_view.get_n_pages():
             doc_page = DocPage(uri)
             self.add_tab(doc_page)

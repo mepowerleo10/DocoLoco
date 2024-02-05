@@ -5,6 +5,8 @@
 
 .search-box {
   padding-left: 0;
+  background-color: #302E32FF;
+  border-radius: 6px;
 }
 
 .locator-entry image.left {

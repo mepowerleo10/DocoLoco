@@ -2,7 +2,6 @@ import html
 import re
 from typing import cast
 from urllib.parse import unquote
-from .locator import Locator
 
 import gi
 from bs4 import BeautifulSoup
@@ -11,6 +10,7 @@ from ..config import default_config
 from ..helpers import add_symmetric_margins
 from ..models import DocSet, Section
 from ..models.base import Doc
+from .locator import Locator
 from .new_page import NewPage
 from .section_widget import SectionWidget
 
@@ -42,12 +42,10 @@ class DocPage(Adw.Bin):
 
     def __init__(self, docset: DocSet = None, uri: str = None):
         super().__init__(hexpand=True, vexpand=True)
-        self.docset = docset
         self.locator = Locator()
 
         self.web_view.connect("load-failed", self.on_load_failed)
         self.web_view.connect("load-changed", self.on_load_changed)
-        self.web_view.connect("mouse-target-changed", self.on_mouse_target_changed)
         self.web_view.connect("context-menu", self.on_context_menu)
 
         self.paned = Gtk.Paned(orientation=Gtk.Orientation.VERTICAL)
@@ -55,17 +53,13 @@ class DocPage(Adw.Bin):
 
         self.related_docs: Gio.ListStore = Gio.ListStore()
 
-        self._create_symbols_sections()
-        self._create_related_links_frame()
-
         if uri:
             self.load_uri(uri)
         elif docset:
-            self.locator.set_docset(docset)
+            self.locator.docset = docset
             self.load_uri(docset.index_file_path.as_uri())
         else:
             new_page = NewPage()
-            # new_page.bind_property("title", self, "title", GObject.BindingFlags.DEFAULT)
             self.set_child(new_page)
 
         self.web_view.bind_property(
@@ -80,6 +74,9 @@ class DocPage(Adw.Bin):
             "zoom_level",
             GObject.BindingFlags.BIDIRECTIONAL,
         )
+
+        self._create_symbols_sections()
+        self._create_related_links_frame()
 
     def _create_symbols_sections(self):
         if not self.docset or len(self.docset.sections) == 0:
@@ -121,11 +118,6 @@ class DocPage(Adw.Bin):
         widget = cast(SectionWidget, list_item.get_child())
         section = cast(Section, list_item.get_item())
         widget.build_with(section, self.docset)
-
-    def on_item_clicked(self, label: Gtk.Label, path: str, *args):
-        label.stop_emission_by_name("activate-link")
-        variant = GLib.Variant.new_string(path)
-        self.activate_action("win.open_page", variant)
 
     def _create_related_links_frame(self):
         view_factory = Gtk.SignalListItemFactory()
@@ -253,13 +245,6 @@ class DocPage(Adw.Bin):
     def on_load_failed(self, web_view, load_event, failing_uri: str, error):
         print(error)
 
-    def on_mouse_target_changed(
-        self, web_view: WebKit.WebView, hit_test_result: WebKit.HitTestResult, *args
-    ):
-        uri = hit_test_result.get_link_uri()
-        if uri:
-            pass
-
     def on_context_menu(
         self,
         web_view: WebKit.WebView,
@@ -267,6 +252,9 @@ class DocPage(Adw.Bin):
         hit_test_result: WebKit.HitTestResult,
     ):
         if hit_test_result.context_is_link():
+            if not self.docset:
+                return
+
             action = Gio.SimpleAction(
                 name="open_in_new_tab", parameter_type=GLib.VariantType.new("s")
             )
@@ -363,3 +351,7 @@ class DocPage(Adw.Bin):
         if isinstance(self.get_child(), NewPage):
             new_page = cast(NewPage, self.get_child())
             new_page.filter_item(name)
+
+    @property
+    def docset(self) -> DocSet:
+        return self.locator.docset
