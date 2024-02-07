@@ -3,8 +3,7 @@ from typing import cast
 import gi
 
 from ..config import default_config
-from ..models import Doc, DocSet
-from ..models.base import Section
+from ..models import Doc, DocSet, Section
 from ..providers import DocumentationProvider
 from ..search import SearchProvider, SearchResult
 
