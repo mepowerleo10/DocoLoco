@@ -8,8 +8,7 @@ from bs4 import BeautifulSoup
 
 from ..config import default_config
 from ..helpers import add_symmetric_margins
-from ..models import DocSet, Section
-from ..models.base import Doc
+from ..models import Doc, DocSet, Section
 from .locator import Locator
 from .new_page import NewPage
 from .section_widget import SectionWidget

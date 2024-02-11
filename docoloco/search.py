@@ -1,7 +1,7 @@
 from gi.repository import Gio, GObject, GLib
 
 from .helpers import is_valid_url
-from .models.base import DocSet, Section
+from .models import DocSet, Section
 from .providers import DocumentationProvider
 
 

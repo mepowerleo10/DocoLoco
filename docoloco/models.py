@@ -274,3 +274,9 @@ class DocSet(GObject.Object):
     @property
     def is_loaded(self):
         return len(self.sections) > 0
+
+class DocsetMetadata(GObject.GObject):
+    def __init__(self, author: str, name: str, aliases: List, archive :str, icon: str, icon_2x: str):
+        super().__init__()
+
+        # self.
