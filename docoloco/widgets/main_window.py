@@ -84,6 +84,7 @@ class MainWindow(Adw.ApplicationWindow):
             ("open_page", self.open_page, "s", None, None),
             ("open_page_uri", self.open_page_uri, "s", None, None),
             ("change_docset", self.change_docset, "(ssi)", None, None),
+            ("change_provider", self.change_provider, "s", None, None),
             ("open_in_new_tab", self.open_in_new_tab, "(sss)", None, None),
             ("filter_docset", self.filter_docset, "s", None, None),
             ("change_filter", self.change_filter, "s", None, None),
@@ -182,7 +183,7 @@ class MainWindow(Adw.ApplicationWindow):
         self.selected_doc_page.filter_docset(name.get_string())
 
     def change_provider(self, action, provider_id):
-        provider = get_registry().providers[provider_id]
+        provider = get_registry().providers[provider_id.get_string()]
         if provider:
             self.selected_doc_page.locator.set_provider(provider)
 

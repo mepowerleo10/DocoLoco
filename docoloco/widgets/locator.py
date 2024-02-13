@@ -16,14 +16,10 @@ from gi.repository import Adw, Gio, GLib, GObject, Gtk  # noqa: E402
 class Locator(Adw.Bin):
     __gtype_name__ = "Locator"
 
-    entry = cast(Gtk.Entry, Gtk.Template.Child("locator_entry"))
+    entry = cast(Gtk.Entry, Gtk.Template.Child())
     results_view: Gtk.ListView = Gtk.Template.Child()
     popover: Gtk.Popover = Gtk.Template.Child()
     search_selection_model: Gtk.SingleSelection = None
-    docset_btn: Gtk.Button = Gtk.Template.Child()
-    docset_label: Gtk.Label = Gtk.Template.Child()
-    docset_icon: Gtk.Image = Gtk.Template.Child()
-    section_btn: Adw.SplitButton = Gtk.Template.Child()
     search_box = cast(Gtk.Box, Gtk.Template.Child())
 
     def __init__(self):
@@ -52,8 +48,6 @@ class Locator(Adw.Bin):
         self.results_view.connect("activate", lambda _, i: self.entry_activated(pos=i))
         self.popover.set_parent(self.search_box)
 
-        self.docset_btn.connect("clicked", self.on_click_docset_btn)
-
     def setup_search_result(self, factory, obj: GObject.Object):
         list_item = cast(Gtk.ListItem, obj)
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
@@ -70,9 +64,14 @@ class Locator(Adw.Bin):
         box = cast(Gtk.Box, list_item.get_child())
         result = cast(SearchResult, list_item.get_item())
 
-        icon = cast(Gtk.Image(), box.get_first_child())
-        icon.set_from_icon_name(result.icon_name)
-        label = cast(Gtk.Label(), box.get_last_child())
+        icon = cast(Gtk.Image, box.get_first_child())
+
+        if isinstance(result.icon, str):
+            icon.set_from_icon_name(result.icon)
+        else:
+            icon.set_from_gicon(result.icon)
+
+        label = cast(Gtk.Label, box.get_last_child())
         label.set_label(result.title)
 
     def search_changed(self):
@@ -83,11 +82,11 @@ class Locator(Adw.Bin):
 
         text = text.strip().lower()
 
-        if self.docset:
-            self.search_provider.search(text)
-        else:
-            variant = GLib.Variant.new_string(text)
-            self.activate_action("win.filter_docset", variant)
+        # if self.docset:
+        self.search_provider.search(text)
+        # else:
+        #     variant = GLib.Variant.new_string(text)
+        #     self.activate_action("win.filter_docset", variant)
 
     def search_docset(self, text: str):
         # TODO: Add link this method with SearcProvider
@@ -100,7 +99,7 @@ class Locator(Adw.Bin):
         if result:
             action_name, action_args = result.action_name, result.action_args
             self.activate_action(action_name, action_args)
-        
+
         self.toggle_focus()
 
     def on_select_doc_entry(self, url: str):
@@ -120,21 +119,17 @@ class Locator(Adw.Bin):
         self.search_provider.docset = docset
 
         if docset:
-            self.docset_label.set_label(docset.title)
-            self.docset_icon.set_from_gicon(docset.icon)
             self.entry.set_placeholder_text(
                 "Press Ctrl+P to search sections and symbols"
             )
 
+            # TODO: Link this menu to the section selector
             menu = Gio.Menu()
             menu.append("All", f"win.change_filter({GLib.Variant.new_string('All')})")
             for name, count in self.docset.symbol_counts.items():
                 menu.append(name, f"win.change_filter({GLib.Variant.new_string(name)})")
 
-            self.section_btn.set_menu_model(menu)
         else:
-            self.docset_label.set_label("DocSet")
-            self.docset_icon.set_from_icon_name("accessories-dictionary-symbolic")
             self.entry.set_placeholder_text("Press Ctrl+P to filter docsets")
 
     @property
@@ -150,29 +145,14 @@ class Locator(Adw.Bin):
         if self.docset and self.search_result_model.get_n_items() > 0:
             self.popover.set_visible(not self.popover.get_visible())
 
-    def on_click_docset_btn(self, *args):
-        if self.docset:
-            variant = GLib.Variant.new_string(self.docset.index_file_path.as_uri())
-            self.activate_action("win.open_page", variant)
-
     def on_search_result_items_changed(self, *args):
         if self.search_result_model.get_n_items() > 0:
             self.popover.set_visible(True)
 
     def change_filter(self, name: str):
-        icon: Gtk.Image = self.section_btn.get_child().get_first_child()
-        label: Gtk.Label = self.section_btn.get_child().get_last_child()
-
         self.section = (
             None if "All" in name else Section(name, self.docset.symbol_counts[name])
         )
-
-        if self.section:
-            icon.set_from_icon_name(self.section.icon_name)
-            label.set_label(self.section.title)
-        else:
-            icon.set_from_icon_name("document")
-            label.set_label(name)
 
         self.search_changed()
 

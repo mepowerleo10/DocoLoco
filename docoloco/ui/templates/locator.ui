@@ -41,46 +41,7 @@
       <object class="GtkBox" id="search_box">
         <property name="css-classes">search-box</property>
         <child>
-          <object class="GtkButton" id="docset_btn">
-            <child>
-              <object class="GtkBox">
-                <child>
-                  <object class="GtkImage" id="docset_icon">
-                    <property name="icon-name">accessories-dictionary-symbolic</property>
-                    <property name="margin-end">8</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="docset_label">
-                    <property name="label">DocSet</property>
-                  </object>
-                </child>
-              </object>
-            </child>
-          </object>
-        </child>
-        <child>
-          <object class="AdwSplitButton" id="section_btn">
-            <property name="margin-end">2</property>
-            <child>
-              <object class="GtkBox">
-                <child>
-                  <object class="GtkImage">
-                    <property name="icon-name">document</property>
-                    <property name="margin-end">8</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="label">All</property>
-                  </object>
-                </child>
-              </object>
-            </child>
-          </object>
-        </child>
-        <child>
-          <object class="GtkEntry" id="locator_entry">
+          <object class="GtkEntry" id="entry">
             <property name="accessible-role">text-box</property>
             <property name="css-classes">locator-entry</property>
             <property name="css-name">entry</property>

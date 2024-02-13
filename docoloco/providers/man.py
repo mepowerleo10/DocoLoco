@@ -2,12 +2,13 @@ import json
 import subprocess
 from pathlib import Path
 from shutil import copyfile
-from typing import Dict, List
+from typing import Dict
 
 from bs4 import BeautifulSoup
 
-from .views import ManDocsetsView
-from gi.repository.Gio import ListStore
+from docoloco.models import SearchResult
+
+from gi.repository import Gio, GLib
 
 from docoloco.config import default_config
 from docoloco.models import Doc, DocSet
@@ -21,7 +22,7 @@ class ManProvider(DocumentationProvider):
         self.type = DocumentationProvider.Type.QUERYABLE
         self.icon_path = default_config.icon("providers/man.png")
 
-    def query(self, name: str) -> List[DocSet]:
+    def query(self, name: str):
         self.query_results_model.remove_all()
 
         process = subprocess.Popen(
@@ -38,12 +39,19 @@ class ManProvider(DocumentationProvider):
                 name = parts[0].strip()
 
                 doc = ManDocSet(provider_id=self.name, name=name, description=line)
-                self.query_results_model.append(doc)
+                self.query_results_model.append(
+                    SearchResult(
+                        title=doc.name,
+                        icon=Gio.FileIcon.new_for_string(self.icon_path.as_posix()),
+                        has_child=True,
+                        action_name="win.change_docset",
+                        action_args=GLib.Variant("(ssi)", (self.name, doc.name, 0)),
+                    )
+                )
         else:
             print(error.decode())
 
-    def get_view(self):
-        return ManDocsetsView(self)
+        return self.query_results_model
 
 
 class ManDocSet(DocSet):
@@ -139,5 +147,5 @@ class ManDocSet(DocSet):
         with open(self.metadata_path, "w") as metadata_file:
             json.dump(symbols, metadata_file)
 
-    def related_docs_of(self, url: str) -> ListStore:
+    def related_docs_of(self, url: str) -> Gio.ListStore:
         return self.related_docs

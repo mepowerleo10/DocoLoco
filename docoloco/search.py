@@ -1,28 +1,9 @@
+from .registry import get_registry
 from gi.repository import Gio, GObject, GLib
 
 from .helpers import is_valid_url
-from .models import DocSet, Section
+from .models import DocSet, SearchResult, Section
 from .providers import DocumentationProvider
-
-
-class SearchResult(GObject.Object):
-    __gtype_name__ = "SearchResult"
-
-    def __init__(
-        self,
-        title: str,
-        icon_name: str,
-        has_child: bool,
-        action_name: str,
-        action_args: str,
-    ) -> None:
-        super().__init__()
-
-        self.title = title
-        self.icon_name = icon_name
-        self.has_child = (has_child,)
-        self.action_name = action_name
-        self.action_args = action_args
 
 
 class SearchProvider(GObject.Object):
@@ -43,42 +24,59 @@ class SearchProvider(GObject.Object):
         self.result.remove_all()
 
         if self.docset:
+            self.find_in_docset(word)
+        elif self.section:
+            self.filter_sections(word)
+        elif self.provider:
             self.filter_docsets(word)
+        else:
+            self.filter_providers(word)
 
-    def filter_docsets(self, word):
+    def find_in_docset(self, word):
         results = (
             self.docset.search(word, self.section.title)
             if self.section
             else self.docset.search(word)
         )
-        for item in results:
-            self.result.append(
-                SearchResult(
-                    item.name,
-                    item.icon_name,
-                    False,
-                    action_name="win.open_page_uri",
-                    action_args=GLib.Variant.new_string(item.url),
-                )
-            )
+
+        self.result.splice(0, self.result.get_n_items(), results)
 
         if self.result.get_n_items() == 0:
             query = f'"{self.docset.name}" {word}'
             google_item = SearchResult(
                 title=f"Google - {word}",
-                icon_name="web-browser-symbolic",
+                icon="web-browser-symbolic",
                 has_child=False,
                 action_name="win.open_page_uri",
-                action_args=GLib.Variant.new_string(f"https://google.com/search?q={query}"),
+                action_args=GLib.Variant.new_string(
+                    f"https://google.com/search?q={query}"
+                ),
             )
             self.result.append(google_item)
 
         if is_valid_url(word):
             url_link_item = SearchResult(
                 title=f"Open Link - {word}",
-                icon_name="emblem-symbolic-link",
+                icon="emblem-symbolic-link",
                 has_child=False,
                 action_name="win.open_page_uri",
                 action_args=GLib.Variant.new_string(word),
             )
             self.result.insert(0, url_link_item)
+
+    def filter_docsets(self, word: str):
+        results = self.provider.query(word)
+        self.result.splice(0, self.result.get_n_items(), results)
+
+    def filter_providers(self, word: str):
+        for key, provider in get_registry().providers.items():
+            if word in provider.name:
+                self.result.append(
+                    SearchResult(
+                        provider.name,
+                        provider.icon,
+                        has_child=True,
+                        action_name="win.change_provider",
+                        action_args=GLib.Variant.new_string(key),
+                    )
+                )
