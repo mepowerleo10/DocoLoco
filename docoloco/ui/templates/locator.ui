@@ -41,6 +41,27 @@
       <object class="GtkBox" id="search_box">
         <property name="css-classes">search-box</property>
         <child>
+          <object class="GtkButton" id="docset_btn">
+            <property name="css-name">splitbutton</property>
+            <property name="visible">False</property>
+            <child>
+              <object class="GtkImage">
+                <property name="margin-bottom">4</property>
+                <property name="margin-end">4</property>
+                <property name="margin-start">4</property>
+                <property name="margin-top">4</property>
+                <property name="pixel-size">20</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwSplitButton" id="section_btn">
+            <property name="label">All</property>
+            <property name="visible">False</property>
+          </object>
+        </child>
+        <child>
           <object class="GtkEntry" id="entry">
             <property name="accessible-role">text-box</property>
             <property name="css-classes">locator-entry</property>

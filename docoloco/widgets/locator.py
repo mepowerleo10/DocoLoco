@@ -22,6 +22,9 @@ class Locator(Adw.Bin):
     search_selection_model: Gtk.SingleSelection = None
     search_box = cast(Gtk.Box, Gtk.Template.Child())
 
+    docset_btn = cast(Gtk.Button, Gtk.Template.Child())
+    section_btn = cast(Adw.SplitButton, Gtk.Template.Child())
+
     def __init__(self):
         super().__init__()
 
@@ -46,7 +49,7 @@ class Locator(Adw.Bin):
         self.results_view.set_model(self.search_selection_model)
         self.results_view.set_factory(view_factory)
         self.results_view.connect("activate", lambda _, i: self.entry_activated(pos=i))
-        self.popover.set_parent(self.search_box)
+        self.popover.set_parent(self.entry)
 
     def setup_search_result(self, factory, obj: GObject.Object):
         list_item = cast(Gtk.ListItem, obj)
@@ -54,7 +57,7 @@ class Locator(Adw.Bin):
 
         icon = Gtk.Image()
         label = Gtk.Label()
-        
+
         title_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         title_box.append(icon)
         title_box.append(label)
@@ -91,21 +94,8 @@ class Locator(Adw.Bin):
 
     def search_changed(self):
         text: str = self.entry.get_text()
-
-        """ if not (text or self.popover.is_visible()):
-            return """
-
         text = text.strip().lower()
-
-        # if self.docset:
         self.search_provider.search(text)
-        # else:
-        #     variant = GLib.Variant.new_string(text)
-        #     self.activate_action("win.filter_docset", variant)
-
-    def search_docset(self, text: str):
-        # TODO: Add link this method with SearcProvider
-        self.popover.set_visible(True)
 
     def entry_activated(self, pos: int = None, result: Doc = None):
         pos = pos if pos else self.search_selection_model.get_selected()
@@ -132,15 +122,12 @@ class Locator(Adw.Bin):
             self.entry.set_placeholder_text(
                 "Press Ctrl+P to search sections and symbols"
             )
-
-            # TODO: Link this menu to the section selector
-            menu = Gio.Menu()
-            menu.append("All", f"win.change_filter({GLib.Variant.new_string('All')})")
-            for name, count in self.docset.symbol_counts.items():
-                menu.append(name, f"win.change_filter({GLib.Variant.new_string(name)})")
-
+            self.docset_btn.set_visible(True)
+            icon = cast(Gtk.Image, self.docset_btn.get_child())
+            icon.set_from_gicon(docset.icon)
         else:
             self.entry.set_placeholder_text("Press Ctrl+P to filter docsets")
+            self.docset_btn.set_visible(False)
 
     @property
     def section(self) -> Section:
@@ -149,6 +136,18 @@ class Locator(Adw.Bin):
     @section.setter
     def section(self, section: Section):
         self.search_provider.section = section
+
+        if section:            
+            menu = Gio.Menu()
+            menu.append("All", f"win.change_section({GLib.Variant.new_string('All')})")
+            for name, count in self.docset.symbol_counts.items():
+                menu.append(name, f"win.change_section({GLib.Variant.new_string(name)})")
+            
+            self.section_btn.set_visible(True)
+            self.section_btn.set_menu_model(menu)
+
+        else:
+            self.section_btn.set_visible(False)
 
     def toggle_focus(self, *args):
         self.entry.grab_focus()
