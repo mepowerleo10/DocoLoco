@@ -84,10 +84,10 @@ class MainWindow(Adw.ApplicationWindow):
             ("open_page", self.open_page, "s", None, None),
             ("open_page_uri", self.open_page_uri, "s", None, None),
             ("change_docset", self.change_docset, "(ssi)", None, None),
+            ("change_section", self.change_section, "s", None, None),
             ("change_provider", self.change_provider, "s", None, None),
             ("open_in_new_tab", self.open_in_new_tab, "(sss)", None, None),
             ("filter_docset", self.filter_docset, "s", None, None),
-            ("change_filter", self.change_filter, "s", None, None),
             ("close_tab", self.close_tab, None, "<primary>W", None),
             ("go_back", self.go_back, None, "<Alt>Left", None),
             ("go_forward", self.go_forward, None, "<Alt>Right", None),
@@ -157,9 +157,9 @@ class MainWindow(Adw.ApplicationWindow):
             self.go_back_action.set_enabled(False)
             self.go_forward_action.set_enabled(False)
 
-    def change_filter(self, _, name_variant):
+    def change_section(self, _, name_variant):
         name = name_variant.get_string()
-        self.selected_doc_page.locator.change_filter(name)
+        self.selected_doc_page.locator.change_section(name)
 
     def focus_locator(self, *args):
         self.selected_doc_page.locator.toggle_focus()

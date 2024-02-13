@@ -1,9 +1,9 @@
-from .registry import get_registry
-from gi.repository import Gio, GObject, GLib
+from gi.repository import Gio, GLib, GObject
 
 from .helpers import is_valid_url
 from .models import DocSet, SearchResult, Section
 from .providers import DocumentationProvider
+from .registry import get_registry
 
 
 class SearchProvider(GObject.Object):
@@ -22,11 +22,13 @@ class SearchProvider(GObject.Object):
 
     def search(self, word: str):
         self.result.remove_all()
+        word = word.strip().lower()
 
         if self.docset:
-            self.find_in_docset(word)
-        elif self.section:
-            self.filter_sections(word)
+            if not self.section and (not word or len(word) == 0):
+                self.show_sections()
+            else:
+                self.find_in_docset(word)
         elif self.provider:
             self.filter_docsets(word)
         else:
@@ -67,6 +69,19 @@ class SearchProvider(GObject.Object):
     def filter_docsets(self, word: str):
         results = self.provider.query(word)
         self.result.splice(0, self.result.get_n_items(), results)
+
+    def show_sections(self):
+        for title, count in self.docset.symbol_counts.items():
+            section = Section(title, count)
+            self.result.append(
+                SearchResult(
+                    title=section.title,
+                    icon=section.icon_name,
+                    has_child=True,
+                    action_name="win.change_section",
+                    action_args=GLib.Variant.new_string(section.title),
+                )
+            )
 
     def filter_providers(self, word: str):
         for key, provider in get_registry().providers.items():

@@ -4,7 +4,7 @@ import sqlite3
 from collections import OrderedDict, namedtuple
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict
 
 from gi.repository import Gio, GLib
 

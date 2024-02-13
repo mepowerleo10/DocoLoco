@@ -306,6 +306,6 @@ class SearchResult(GObject.Object):
 
         self.title = title
         self.icon = icon
-        self.has_child = (has_child,)
+        self.has_child = has_child
         self.action_name = action_name
         self.action_args = action_args

@@ -51,28 +51,43 @@ class Locator(Adw.Bin):
     def setup_search_result(self, factory, obj: GObject.Object):
         list_item = cast(Gtk.ListItem, obj)
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+
         icon = Gtk.Image()
         label = Gtk.Label()
+        
+        title_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        title_box.append(icon)
+        title_box.append(label)
+        title_box.set_hexpand(True)
+        title_box.set_hexpand_set(True)
+        box.append(title_box)
 
-        box.append(icon)
-        box.append(label)
+        arrow = Gtk.Image()
+        arrow.set_from_icon_name("go-next-symbolic")
+        box.append(arrow)
         box.get_style_context().add_class("result-line")
         list_item.set_child(box)
 
     def bind_search_result(self, factory, obj: GObject.Object):
         list_item = cast(Gtk.ListItem, obj)
         box = cast(Gtk.Box, list_item.get_child())
+        title_box = cast(Gtk.Box, box.get_first_child())
         result = cast(SearchResult, list_item.get_item())
 
-        icon = cast(Gtk.Image, box.get_first_child())
-
+        icon = cast(Gtk.Image, title_box.get_first_child())
         if isinstance(result.icon, str):
             icon.set_from_icon_name(result.icon)
         else:
             icon.set_from_gicon(result.icon)
 
-        label = cast(Gtk.Label, box.get_last_child())
+        label = cast(Gtk.Label, title_box.get_last_child())
         label.set_label(result.title)
+
+        arrow = cast(Gtk.Image, box.get_last_child())
+        if result.has_child:
+            arrow.show()
+        else:
+            arrow.hide()
 
     def search_changed(self):
         text: str = self.entry.get_text()
@@ -100,12 +115,7 @@ class Locator(Adw.Bin):
             action_name, action_args = result.action_name, result.action_args
             self.activate_action(action_name, action_args)
 
-        self.toggle_focus()
-
-    def on_select_doc_entry(self, url: str):
-        variant = GLib.Variant.new_string(url)
-        self.activate_action("win.open_page", variant)
-        self.toggle_focus()
+        self.search_changed()
 
     def set_provider(self, provider: DocumentationProvider):
         self.search_provider.provider = provider
@@ -149,7 +159,7 @@ class Locator(Adw.Bin):
         if self.search_result_model.get_n_items() > 0:
             self.popover.set_visible(True)
 
-    def change_filter(self, name: str):
+    def change_section(self, name: str):
         self.section = (
             None if "All" in name else Section(name, self.docset.symbol_counts[name])
         )

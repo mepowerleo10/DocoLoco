@@ -153,7 +153,6 @@ class DocPage(Adw.Bin):
     def _bind_related_link(self, factory, obj):
         list_item = cast(Gtk.ListItem, obj)
         box = cast(Gtk.Box, list_item.get_child())
-        icon = cast(Gtk.Image, box.get_first_child())
         label = cast(Gtk.Label, box.get_last_child())
 
         doc = cast(Doc, list_item.get_item())
