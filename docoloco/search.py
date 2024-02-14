@@ -2,20 +2,17 @@ from gi.repository import Gio, GLib, GObject
 
 from .helpers import is_valid_url
 from .models import DocSet, SearchResult, Section
-from .providers import DocumentationProvider
 from .registry import get_registry
 
 
 class SearchProvider(GObject.Object):
     def __init__(
         self,
-        provider: DocumentationProvider = None,
         docset: DocSet = None,
         section: Section = None,
     ):
         super().__init__()
 
-        self.provider = provider
         self.docset = docset
         self.section = section
         self.result = Gio.ListStore(item_type=SearchResult)
@@ -29,10 +26,8 @@ class SearchProvider(GObject.Object):
                 self.show_sections()
             else:
                 self.find_in_docset(word)
-        elif self.provider:
-            self.filter_docsets(word)
         else:
-            self.filter_providers(word)
+            self.filter_docsets(word)
 
     def find_in_docset(self, word):
         results = (
@@ -67,7 +62,7 @@ class SearchProvider(GObject.Object):
             self.result.insert(0, url_link_item)
 
     def filter_docsets(self, word: str):
-        results = self.provider.query(word)
+        results = get_registry().search(word)
         self.result.splice(0, self.result.get_n_items(), results)
 
     def show_sections(self):
@@ -82,16 +77,3 @@ class SearchProvider(GObject.Object):
                     action_args=GLib.Variant.new_string(section.title),
                 )
             )
-
-    def filter_providers(self, word: str):
-        for key, provider in get_registry().providers.items():
-            if word in provider.name:
-                self.result.append(
-                    SearchResult(
-                        provider.name,
-                        provider.icon,
-                        has_child=True,
-                        action_name="win.change_provider",
-                        action_args=GLib.Variant.new_string(key),
-                    )
-                )

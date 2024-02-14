@@ -4,7 +4,6 @@ import gi
 
 from ..config import default_config
 from ..models import Doc, DocSet, Section
-from ..providers import DocumentationProvider
 from ..search import SearchProvider, SearchResult
 
 gi.require_version("Gtk", "4.0")
@@ -107,9 +106,6 @@ class Locator(Adw.Bin):
 
         self.search_changed()
 
-    def set_provider(self, provider: DocumentationProvider):
-        self.search_provider.provider = provider
-
     @property
     def docset(self) -> DocSet:
         return self.search_provider.docset
@@ -125,6 +121,7 @@ class Locator(Adw.Bin):
             self.docset_btn.set_visible(True)
             icon = cast(Gtk.Image, self.docset_btn.get_child())
             icon.set_from_gicon(docset.icon)
+            self.docset_btn.set_tooltip_text(docset.title)
         else:
             self.entry.set_placeholder_text("Press Ctrl+P to filter docsets")
             self.docset_btn.set_visible(False)
@@ -137,15 +134,17 @@ class Locator(Adw.Bin):
     def section(self, section: Section):
         self.search_provider.section = section
 
-        if section:            
+        if section:
             menu = Gio.Menu()
-            menu.append("All", f"win.change_section({GLib.Variant.new_string('All')})")
+            # menu.append("All", f"win.change_section({GLib.Variant.new_string('All')})")
             for name, count in self.docset.symbol_counts.items():
-                menu.append(name, f"win.change_section({GLib.Variant.new_string(name)})")
-            
+                menu.append(
+                    name, f"win.change_section({GLib.Variant.new_string(name)})"
+                )
+
+            self.section_btn.set_label(section.title)
             self.section_btn.set_visible(True)
             self.section_btn.set_menu_model(menu)
-
         else:
             self.section_btn.set_visible(False)
 
@@ -167,7 +166,13 @@ class Locator(Adw.Bin):
 
     def on_icon_pressed(self, entry, icon_position: Gtk.EntryIconPosition, *data):
         if icon_position == Gtk.EntryIconPosition.SECONDARY:
-            self.entry.set_text("")
+            text = cast(str, self.entry.get_text())
+            if text.strip():
+                self.entry.set_text("")
+            elif self.section:
+                self.section = None
+            elif self.docset:
+                self.docset = None
 
     @property
     def search_result_model(self) -> Gio.ListStore:

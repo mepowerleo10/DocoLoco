@@ -70,7 +70,7 @@ class SectionWidget(Adw.Bin):
     def bind_doc_widget(self, factory, obj: GObject.Object):
         list_item = cast(Gtk.ListItem, obj)
         box = cast(Gtk.Box, list_item.get_child())
-        icon = cast(Gtk.Image, box.get_first_child())
+        _ = cast(Gtk.Image, box.get_first_child())
         label = cast(Gtk.Label, box.get_last_child())
 
         doc = cast(Doc, list_item.get_item())

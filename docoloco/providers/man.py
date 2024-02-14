@@ -5,19 +5,18 @@ from shutil import copyfile
 from typing import Dict
 
 from bs4 import BeautifulSoup
-
-from docoloco.models import SearchResult
-
 from gi.repository import Gio, GLib
 
 from docoloco.config import default_config
-from docoloco.models import Doc, DocSet
+from docoloco.models import Doc, DocSet, SearchResult
 from docoloco.providers import DocumentationProvider
 
 
 class ManProvider(DocumentationProvider):
     def __init__(self) -> None:
         super().__init__()
+
+        self.id = "man"
         self.name = "Man Pages"
         self.type = DocumentationProvider.Type.QUERYABLE
         self.icon_path = default_config.icon("providers/man.png")
@@ -34,20 +33,22 @@ class ManProvider(DocumentationProvider):
 
         if process.returncode == 0:
             output_lines = output.decode().splitlines()[:100]
+            self.docs = dict()
             for line in output_lines:
                 parts = line.split("(")
                 name = parts[0].strip()
 
-                doc = ManDocSet(provider_id=self.name, name=name, description=line)
+                doc = ManDocSet(provider_id=self.id, name=name, description=line)
                 self.query_results_model.append(
                     SearchResult(
                         title=doc.name,
-                        icon=Gio.FileIcon.new_for_string(self.icon_path.as_posix()),
+                        icon=Gio.FileIcon.new_for_string(self.icon_path),
                         has_child=True,
                         action_name="win.change_docset",
-                        action_args=GLib.Variant("(ssi)", (self.name, doc.name, 0)),
+                        action_args=GLib.Variant("(ssi)", (self.id, doc.name, 0)),
                     )
                 )
+                self.docs[doc.name] = doc
         else:
             print(error.decode())
 

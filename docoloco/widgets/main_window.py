@@ -85,7 +85,6 @@ class MainWindow(Adw.ApplicationWindow):
             ("open_page_uri", self.open_page_uri, "s", None, None),
             ("change_docset", self.change_docset, "(ssi)", None, None),
             ("change_section", self.change_section, "s", None, None),
-            ("change_provider", self.change_provider, "s", None, None),
             ("open_in_new_tab", self.open_in_new_tab, "(sss)", None, None),
             ("filter_docset", self.filter_docset, "s", None, None),
             ("close_tab", self.close_tab, None, "<primary>W", None),
@@ -181,11 +180,6 @@ class MainWindow(Adw.ApplicationWindow):
 
     def filter_docset(self, action=None, name: GLib.Variant = None):
         self.selected_doc_page.filter_docset(name.get_string())
-
-    def change_provider(self, action, provider_id):
-        provider = get_registry().providers[provider_id.get_string()]
-        if provider:
-            self.selected_doc_page.locator.set_provider(provider)
 
     def change_docset(self, action, parameters):
         if not (parameters or action):

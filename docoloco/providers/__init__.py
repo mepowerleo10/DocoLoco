@@ -30,6 +30,7 @@ class DocumentationProvider(GObject.Object):
     def __init__(self) -> None:
         super().__init__()
 
+        self.id: str = None
         self.name: str = None
         self.docs: Dict[str, DocSet] = dict()
         self.root_path: Path = None
@@ -45,10 +46,7 @@ class DocumentationProvider(GObject.Object):
         ...
 
     def get(self, name: str = None, position: int = None) -> DocSet:
-        if self.type == self.Type.PRELOADED:
-            return self.docs[name]
-        else:
-            return self.query_results_model.get_item(position)
+        return self.docs[name]
 
     def get_view(self) -> Gtk.Widget:
         ...

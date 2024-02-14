@@ -13,15 +13,17 @@ from docoloco.providers import DocumentationProvider
 
 
 class DashProvider(DocumentationProvider):
-    def __init__(self, name: str, root_path: Path) -> None:
+    def __init__(self, id: str, name: str, root_path: Path) -> None:
         super().__init__()
+
+        self.id = id
         self.name = name
         self.root_path = root_path
 
     def load(self):
         for doc_path in self.root_path.iterdir():
             try:
-                doc = DashDocSet(provider_id=self.name, path=doc_path)
+                doc = DashDocSet(provider_id=self.id, path=doc_path)
                 self.docs[doc.name] = doc
             except Exception as e:
                 print(e)
@@ -39,7 +41,7 @@ class DashProvider(DocumentationProvider):
                         icon=docset.icon,
                         has_child=True,
                         action_name="win.change_docset",
-                        action_args=GLib.Variant("(ssi)", (self.name, docset.name, 0)),
+                        action_args=GLib.Variant("(ssi)", (self.id, docset.name, 0)),
                     )
                 )
 
