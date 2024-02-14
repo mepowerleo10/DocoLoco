@@ -34,10 +34,10 @@ class DashProvider(DocumentationProvider):
         self.query_results_model.remove_all()
 
         for key, docset in self.docs.items():
-            if name in docset.name:
+            if name in docset.title.strip().lower():
                 self.query_results_model.append(
                     SearchResult(
-                        title=docset.name,
+                        title=docset.title,
                         icon=docset.icon,
                         has_child=True,
                         action_name="win.change_docset",

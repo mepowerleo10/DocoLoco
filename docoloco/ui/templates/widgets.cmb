@@ -171,6 +171,7 @@
 	(6,21,"AdwSplitButton","label","All",None,None,None,None,None,None,None,None,None),
 	(6,21,"GtkWidget","visible","False",None,None,None,None,None,None,None,None,None),
 	(6,22,"GtkWidget","has-tooltip","True",None,None,None,None,None,None,None,None,None),
+	(6,22,"GtkWidget","margin-end","4",None,None,None,None,None,None,None,None,None),
 	(6,22,"GtkWidget","visible","False",None,None,None,None,None,None,None,None,None),
 	(6,23,"GtkImage","pixel-size","20",None,None,None,None,None,None,None,None,None),
 	(6,23,"GtkWidget","margin-bottom","2",None,None,None,None,None,None,None,None,None),

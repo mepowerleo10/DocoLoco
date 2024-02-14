@@ -34,7 +34,7 @@ class Locator(Adw.Bin):
         )
 
         self.entry.connect("activate", self.toggle_focus)
-        self.entry.connect("changed", lambda _: self.search_changed())
+        self.entry.connect("changed", self.search_changed)
         self.entry.connect("icon-press", self.on_icon_pressed)
 
         view_factory = Gtk.SignalListItemFactory()
@@ -67,7 +67,7 @@ class Locator(Adw.Bin):
         arrow = Gtk.Image()
         arrow.set_from_icon_name("go-next-symbolic")
         box.append(arrow)
-        box.get_style_context().add_class("result-line")
+        box.add_css_class("result-line")
         list_item.set_child(box)
 
     def bind_search_result(self, factory, obj: GObject.Object):
@@ -91,7 +91,7 @@ class Locator(Adw.Bin):
         else:
             arrow.hide()
 
-    def search_changed(self):
+    def search_changed(self, *_):
         text: str = self.entry.get_text()
         text = text.strip().lower()
         self.search_provider.search(text)
@@ -103,8 +103,7 @@ class Locator(Adw.Bin):
         if result:
             action_name, action_args = result.action_name, result.action_args
             self.activate_action(action_name, action_args)
-
-        self.search_changed()
+            self.entry.grab_focus()
 
     @property
     def docset(self) -> DocSet:
@@ -149,12 +148,13 @@ class Locator(Adw.Bin):
             self.section_btn.set_visible(False)
 
     def toggle_focus(self, *args):
-        self.entry.grab_focus()
-        if self.docset and self.search_result_model.get_n_items() > 0:
-            self.popover.set_visible(not self.popover.get_visible())
+        if not self.entry.get_focus_child():
+            self.entry.grab_focus()
+        
+        self.on_search_result_items_changed()
 
     def on_search_result_items_changed(self, *args):
-        if self.search_result_model.get_n_items() > 0:
+        if self.search_result_model.get_n_items() > 0 and self.entry.get_focus_child():
             self.popover.set_visible(True)
 
     def change_section(self, name: str):

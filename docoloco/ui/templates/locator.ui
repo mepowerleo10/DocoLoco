@@ -43,6 +43,7 @@
         <child>
           <object class="GtkButton" id="docset_btn">
             <property name="has-tooltip">True</property>
+            <property name="margin-end">4</property>
             <property name="visible">False</property>
             <child>
               <object class="GtkImage">

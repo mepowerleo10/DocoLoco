@@ -216,6 +216,8 @@ class MainWindow(Adw.ApplicationWindow):
             doc_page = self.selected_doc_page
             doc_page.load_uri(uri)
 
+        self.selected_doc_page.locator.popover.hide()
+
     def open_in_new_tab(self, action, parameters):
         if not (parameters or action):
             return
