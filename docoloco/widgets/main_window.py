@@ -78,15 +78,16 @@ class MainWindow(Adw.ApplicationWindow):
                 None,
             ),
             ("focus_locator", self.focus_locator, None, "<primary>P", None),
+            ("clear_filters", self.clear_filters, None, "<primary>BackSpace", None),
             ("zoom_in", self.zoom_in, None, "<primary>equal", None),
             ("zoom_out", self.zoom_out, None, "<primary>minus", None),
             ("reset_zoom", self.reset_zoom, None, "<primary>plus", None),
             ("open_page", self.open_page, "s", None, None),
             ("open_page_uri", self.open_page_uri, "s", None, None),
             ("change_docset", self.change_docset, "(ssi)", None, None),
+            ("change_section", self.change_section, "s", None, None),
             ("open_in_new_tab", self.open_in_new_tab, "(sss)", None, None),
             ("filter_docset", self.filter_docset, "s", None, None),
-            ("change_filter", self.change_filter, "s", None, None),
             ("close_tab", self.close_tab, None, "<primary>W", None),
             ("go_back", self.go_back, None, "<Alt>Left", None),
             ("go_forward", self.go_forward, None, "<Alt>Right", None),
@@ -156,12 +157,16 @@ class MainWindow(Adw.ApplicationWindow):
             self.go_back_action.set_enabled(False)
             self.go_forward_action.set_enabled(False)
 
-    def change_filter(self, _, name_variant):
+    def change_section(self, _, name_variant):
         name = name_variant.get_string()
-        self.selected_doc_page.locator.change_filter(name)
+        self.selected_doc_page.locator.change_section(name)
 
     def focus_locator(self, *args):
         self.selected_doc_page.locator.toggle_focus()
+
+    def clear_filters(self, *_):
+        if self.selected_doc_page.locator.search_box.get_focus_child():
+            self.selected_doc_page.locator.clear_filters()
 
     def zoom_in(self, *args):
         self.selected_doc_page.zoom_in()
@@ -180,11 +185,6 @@ class MainWindow(Adw.ApplicationWindow):
 
     def filter_docset(self, action=None, name: GLib.Variant = None):
         self.selected_doc_page.filter_docset(name.get_string())
-
-    def change_provider(self, action, provider_id):
-        provider = get_registry().providers[provider_id]
-        if provider:
-            self.selected_doc_page.locator.set_provider(provider)
 
     def change_docset(self, action, parameters):
         if not (parameters or action):
@@ -215,6 +215,8 @@ class MainWindow(Adw.ApplicationWindow):
         else:
             doc_page = self.selected_doc_page
             doc_page.load_uri(uri)
+
+        self.selected_doc_page.locator.popover.hide()
 
     def open_in_new_tab(self, action, parameters):
         if not (parameters or action):

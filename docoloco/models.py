@@ -106,7 +106,7 @@ class DocSet(GObject.Object):
         self.symbol_counts: Dict[str, int] = dict()
         self.sections: Dict[str, Gio.ListStore] = dict()
 
-    def search(self, value: str, section: str = None) -> List[Doc]:
+    def search(self, value: str, section: str = None) -> Gio.ListStore:
         """Search the docset for a value, and return a list of `Doc` objects."""
         ...
 
@@ -275,8 +275,37 @@ class DocSet(GObject.Object):
     def is_loaded(self):
         return len(self.sections) > 0
 
+
 class DocsetMetadata(GObject.GObject):
-    def __init__(self, author: str, name: str, aliases: List, archive :str, icon: str, icon_2x: str):
+    def __init__(
+        self,
+        author: str,
+        name: str,
+        aliases: List,
+        archive: str,
+        icon: str,
+        icon_2x: str,
+    ):
         super().__init__()
 
         # self.
+
+
+class SearchResult(GObject.Object):
+    __gtype_name__ = "SearchResult"
+
+    def __init__(
+        self,
+        title: str,
+        icon: str | Gio.Icon,
+        has_child: bool,
+        action_name: str,
+        action_args: str,
+    ) -> None:
+        super().__init__()
+
+        self.title = title
+        self.icon = icon
+        self.has_child = has_child
+        self.action_name = action_name
+        self.action_args = action_args

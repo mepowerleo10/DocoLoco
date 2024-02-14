@@ -4,34 +4,48 @@ import sqlite3
 from collections import OrderedDict, namedtuple
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict
 
-from gi.repository.Gio import ListStore
+from gi.repository import Gio, GLib
 
-from docoloco.models import Doc, DocSet
+from docoloco.models import Doc, DocSet, SearchResult
 from docoloco.providers import DocumentationProvider
-
-from .views import DashDocsetsView
 
 
 class DashProvider(DocumentationProvider):
-    def __init__(self, name: str, root_path: Path) -> None:
+    def __init__(self, id: str, name: str, root_path: Path) -> None:
         super().__init__()
+
+        self.id = id
         self.name = name
         self.root_path = root_path
 
     def load(self):
         for doc_path in self.root_path.iterdir():
             try:
-                doc = DashDocSet(provider_id=self.name, path=doc_path)
+                doc = DashDocSet(provider_id=self.id, path=doc_path)
                 self.docs[doc.name] = doc
             except Exception as e:
                 print(e)
 
         self.docs = OrderedDict(sorted(self.docs.items()))
 
-    def get_view(self):
-        return DashDocsetsView(self)
+    def query(self, name: str) -> Gio.ListStore:
+        self.query_results_model.remove_all()
+
+        for key, docset in self.docs.items():
+            if name in docset.title.strip().lower():
+                self.query_results_model.append(
+                    SearchResult(
+                        title=docset.title,
+                        icon=docset.icon,
+                        has_child=True,
+                        action_name="win.change_docset",
+                        action_args=GLib.Variant("(ssi)", (self.id, docset.name, 0)),
+                    )
+                )
+
+        return self.query_results_model
 
 
 def namedtuple_factory(cursor: sqlite3.Cursor, row):
@@ -239,7 +253,7 @@ class DashDocSet(DocSet):
 
         self.sections[name] = section_index
 
-    def search(self, value: str, section: str = "") -> List[Doc]:
+    def search(self, value: str, section: str = "") -> Gio.ListStore:
         columns_to_select = self.get_columns()
         symbols_aka = []
         where_conditions = f"name LIKE '%{value}%'"
@@ -253,14 +267,22 @@ class DashDocSet(DocSet):
         query = f"SELECT {columns_to_select} FROM {self.table_name} WHERE {where_conditions} LIMIT 100"
         rows: sqlite3.Cursor = self.con.cursor().execute(query)
 
-        results: List[Doc] = []
+        results = Gio.ListStore(item_type=SearchResult)
         for row in rows.fetchall():
             doc = self.build_doc_from_row(row)
-            results.append(doc)
+            results.append(
+                SearchResult(
+                    title=doc.name,
+                    icon=doc.icon_name,
+                    has_child=False,
+                    action_name="win.open_page_uri",
+                    action_args=GLib.Variant.new_string(doc.url),
+                )
+            )
 
         return results
 
-    def related_docs_of(self, url: str) -> ListStore:
+    def related_docs_of(self, url: str) -> Gio.ListStore:
         path = url.replace(f"{self.documents_dir.as_uri()}/", "").split("#")[0]
         columns_to_select = self.get_columns()
 
