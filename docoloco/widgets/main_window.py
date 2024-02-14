@@ -78,6 +78,7 @@ class MainWindow(Adw.ApplicationWindow):
                 None,
             ),
             ("focus_locator", self.focus_locator, None, "<primary>P", None),
+            ("clear_filters", self.clear_filters, None, "<primary>BackSpace", None),
             ("zoom_in", self.zoom_in, None, "<primary>equal", None),
             ("zoom_out", self.zoom_out, None, "<primary>minus", None),
             ("reset_zoom", self.reset_zoom, None, "<primary>plus", None),
@@ -162,6 +163,10 @@ class MainWindow(Adw.ApplicationWindow):
 
     def focus_locator(self, *args):
         self.selected_doc_page.locator.toggle_focus()
+
+    def clear_filters(self, *_):
+        if self.selected_doc_page.locator.search_box.get_focus_child():
+            self.selected_doc_page.locator.clear_filters()
 
     def zoom_in(self, *args):
         self.selected_doc_page.zoom_in()

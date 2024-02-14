@@ -169,10 +169,14 @@ class Locator(Adw.Bin):
             text = cast(str, self.entry.get_text())
             if text.strip():
                 self.entry.set_text("")
-            elif self.section:
-                self.section = None
-            elif self.docset:
-                self.docset = None
+            else:
+                self.clear_filters()
+
+    def clear_filters(self, *_):
+        if self.section:
+            self.section = None
+        elif self.docset:
+            self.docset = None
 
     @property
     def search_result_model(self) -> Gio.ListStore:
