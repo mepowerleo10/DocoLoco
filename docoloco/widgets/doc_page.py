@@ -49,6 +49,13 @@ class DocPage(Adw.Bin):
         self.web_view.connect("load-changed", self.on_load_changed)
         self.web_view.connect("context-menu", self.on_context_menu)
 
+        self.bind_property(
+            "title",
+            self.locator.search_btn.get_child(),
+            "label",
+            GObject.BindingFlags.DEFAULT,
+        )
+
         self.paned = Gtk.Paned(orientation=Gtk.Orientation.VERTICAL)
         self.sidebar.append(self.paned)
 

@@ -111,6 +111,8 @@ class Locator(Adw.Bin):
             self.activate_action(action_name, action_args)
             self.entry.grab_focus()
 
+        self.search_changed()
+
     @property
     def docset(self) -> DocSet:
         return self.search_provider.docset
