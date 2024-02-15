@@ -77,7 +77,7 @@ class MainWindow(Adw.ApplicationWindow):
                 "<primary>F",
                 None,
             ),
-            ("focus_locator", self.focus_locator, None, "<primary>P", None),
+            ("focus_locator", self.focus_locator, "s", "<primary>P", f"({GLib.Variant.new_string('')})"),
             ("clear_filters", self.clear_filters, None, "<Alt>BackSpace", None),
             ("zoom_in", self.zoom_in, None, "<primary>equal", None),
             ("zoom_out", self.zoom_out, None, "<primary>minus", None),
@@ -161,8 +161,8 @@ class MainWindow(Adw.ApplicationWindow):
         name = name_variant.get_string()
         self.selected_doc_page.locator.change_section(name)
 
-    def focus_locator(self, *args):
-        self.selected_doc_page.locator.toggle_focus()
+    def focus_locator(self, _, initial_text_variant = None):
+        self.selected_doc_page.locator.toggle_focus(initial_text_variant.get_string())
 
     def clear_filters(self, *_):
         if self.selected_doc_page.locator.popover.get_focus_child():
