@@ -36,7 +36,7 @@ modules:
   buildsystem: simple
   build-commands:
   - python --version
-  - pip3 install --prefix=${FLATPAK_DEST} docoloco-0.2.0-py3-none-any.whl
+  - pip3 install --prefix=${FLATPAK_DEST} docoloco.whl
   sources:
   - type: file
     path: dist/docoloco-0.2.0-py3-none-any.whl
