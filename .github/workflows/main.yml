@@ -33,9 +33,10 @@ jobs:
         poetry build --format wheel 
     - uses: actions/upload-artifact@v4
       with:
-        name: docoloco.whl
+        name: docoloco
         path: |
-          dist/docoloco*whl
+          data/
+          dist/
           org.docoloco.DocoLoco.yaml
 
 
