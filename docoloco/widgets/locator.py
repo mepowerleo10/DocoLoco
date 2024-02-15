@@ -141,6 +141,7 @@ class Locator(Adw.Bin):
             self.section_btn.set_menu_model(menu)
 
             self.clear_docset_btn.set_visible(True)
+            self.entry.set_text("")
         else:
             self.entry.set_placeholder_text("Press Ctrl+P to filter docsets")
             self.docset_btn.set_visible(False)
@@ -159,8 +160,12 @@ class Locator(Adw.Bin):
             self.section_btn.set_label(section.title)
 
     @Gtk.Template.Callback()
-    def toggle_focus(self, *_):
+    def toggle_focus(self, entry_filter_text: str = None):
         self.popover.set_visible(True)
+
+        if entry_filter_text:
+            self.entry.set_text(entry_filter_text)
+            self.entry.set_position(len(entry_filter_text))
 
     def on_search_result_items_changed(self, *args):
         model_has_items = self.search_result_model.get_n_items() > 0

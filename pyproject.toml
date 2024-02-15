@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "docoloco"
-version = "0.2.0"
+version = "0"
 description = ""
 authors = ["Mussa Mipawa <mepowerleo10@gmail.com>"]
 readme = "README.md"

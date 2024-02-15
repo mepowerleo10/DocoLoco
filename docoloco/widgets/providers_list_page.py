@@ -8,7 +8,7 @@ from docoloco.providers import DocumentationProvider
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 gi.require_version("WebKit", "6.0")
-from gi.repository import Adw, Gtk  # noqa: E402
+from gi.repository import Adw, Gtk, GLib  # noqa: E402
 
 
 @Gtk.Template(filename=default_config.template("providers_list_page"))
@@ -35,6 +35,11 @@ class ProvidersListPage(Adw.NavigationPage):
             action_row.add_prefix(icon)
 
             button = Gtk.Button()
+            # button.connect("mnemonic-activate", self.on_provider_activate)
             action_row.set_activatable_widget(button)
+            action_row.connect("activated", self.on_provider_activate, provider.id)
 
             self.providers_list_box.append(action_row)
+
+    def on_provider_activate(self, _, provider_id):
+        self.activate_action("win.focus_locator", GLib.Variant.new_string(f"{provider_id}: "))
