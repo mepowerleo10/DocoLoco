@@ -32,6 +32,8 @@ Here are some preview images of DocoLoco in action:
 
 ## Installation
 
+### Manual Installation
+
 To get started with DocoLoco, follow these steps:
 
 1. **Clone the Repository:**
@@ -65,7 +67,7 @@ To get started with DocoLoco, follow these steps:
 
    Ensure that Zeal is installed on your system. You can download Zeal from [https://zealdocs.org/](https://zealdocs.org/).
 
-## Flatpak Version Installation
+### Flatpak Version Installation
 
 1. **Clone the Repository:**
 
@@ -99,6 +101,24 @@ To get started with DocoLoco, follow these steps:
    ```
    flatpak run org.docoloco.DocoLoco.Devel
    ```
+
+### Release Package Installation
+1. **Download the Release Artifacts:**
+   
+   From the releases section, download the `docoloco` archive
+
+2. **Extract the archive:**
+   Extract the archive, and open the extracted folder
+
+3. **Choose your installation method:**
+   - For flatpak installations run the command:
+      ```
+      chmod +x install-flatpak.sh && ./install-flatpak.sh
+      ```
+   - For Python installations run the command:
+      ```
+      pip3 install --prefix=./dist docoloco-0-py3-none-any.whl
+      ```
 
 ## Running the Project
 
