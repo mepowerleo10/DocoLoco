@@ -60,12 +60,5 @@
         </child>
       </object>
     </child>
-    <child>
-      <object class="AdwPreferencesPage" id="man_page">
-        <property name="icon-name">accessories-dictionary-symbolic</property>
-        <property name="name">man</property>
-        <property name="title">Man</property>
-      </object>
-    </child>
   </template>
 </interface>
