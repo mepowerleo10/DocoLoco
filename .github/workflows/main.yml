@@ -30,7 +30,6 @@ jobs:
         python -m pip install poetry ruff
     - name: Build package
       run: |
-        poetry version $GITHUB_REF_NAME
         poetry build --format wheel 
     - uses: actions/upload-artifact@v4
       with:
