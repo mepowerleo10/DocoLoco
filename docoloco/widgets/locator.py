@@ -147,6 +147,7 @@ class Locator(Adw.Bin):
             self.docset_btn.set_visible(False)
             self.section_btn.set_visible(False)
             self.clear_docset_btn.set_visible(False)
+            self.search_changed()
 
     @property
     def section(self) -> Section:
@@ -163,9 +164,11 @@ class Locator(Adw.Bin):
     def toggle_focus(self, entry_filter_text: str = None):
         self.popover.set_visible(True)
 
-        if entry_filter_text:
+        if isinstance(entry_filter_text, str) and len(entry_filter_text) > 0:
             self.entry.set_text(entry_filter_text)
             self.entry.set_position(len(entry_filter_text))
+
+        self.entry.grab_focus()
 
     def on_search_result_items_changed(self, *args):
         model_has_items = self.search_result_model.get_n_items() > 0

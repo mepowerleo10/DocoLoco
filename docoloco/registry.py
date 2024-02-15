@@ -25,7 +25,7 @@ class Registry:
         if ":" in term:
             provider_id, term = term.split(":", 1)
             provider = self.providers.get(provider_id)
-            results = provider.query(term)
+            results = provider.query(term.strip())
         else:
             results = Gio.ListStore(item_type=SearchResult)
             for _, provider in self.providers.items():
