@@ -16,13 +16,17 @@ class Locator(Adw.Bin):
     __gtype_name__ = "Locator"
 
     entry = cast(Gtk.Entry, Gtk.Template.Child())
-    results_view: Gtk.ListView = Gtk.Template.Child()
-    popover: Gtk.Popover = Gtk.Template.Child()
-    search_selection_model: Gtk.SingleSelection = None
+    results_view = cast(Gtk.ListView, Gtk.Template.Child())
+    results_scrolled_win = cast(Gtk.ScrolledWindow, Gtk.Template.Child())
+    popover = cast(Gtk.Popover, Gtk.Template.Child())
+    search_selection_model = cast(Gtk.SingleSelection, None)
     search_box = cast(Gtk.Box, Gtk.Template.Child())
 
+    search_btn = cast(Gtk.Button, Gtk.Template.Child())
     docset_btn = cast(Gtk.Button, Gtk.Template.Child())
     section_btn = cast(Adw.SplitButton, Gtk.Template.Child())
+    clear_docset_btn = cast(Gtk.Button, Gtk.Template.Child())
+    status_page = cast(Adw.StatusPage, Gtk.Template.Child())
 
     def __init__(self):
         super().__init__()
@@ -33,9 +37,7 @@ class Locator(Adw.Bin):
             "items-changed", self.on_search_result_items_changed
         )
 
-        self.entry.connect("activate", self.toggle_focus)
         self.entry.connect("changed", self.search_changed)
-        self.entry.connect("icon-press", self.on_icon_pressed)
 
         view_factory = Gtk.SignalListItemFactory()
         view_factory.connect("setup", self.setup_search_result)
@@ -48,7 +50,11 @@ class Locator(Adw.Bin):
         self.results_view.set_model(self.search_selection_model)
         self.results_view.set_factory(view_factory)
         self.results_view.connect("activate", lambda _, i: self.entry_activated(pos=i))
-        self.popover.set_parent(self.entry)
+        self.popover.set_parent(self.search_btn)
+
+        self.clear_docset_btn.connect(
+            "clicked", lambda *_: self.clear_filters(all=True)
+        )
 
     def setup_search_result(self, factory, obj: GObject.Object):
         list_item = cast(Gtk.ListItem, obj)
@@ -105,6 +111,8 @@ class Locator(Adw.Bin):
             self.activate_action(action_name, action_args)
             self.entry.grab_focus()
 
+        self.search_changed()
+
     @property
     def docset(self) -> DocSet:
         return self.search_provider.docset
@@ -121,9 +129,23 @@ class Locator(Adw.Bin):
             icon = cast(Gtk.Image, self.docset_btn.get_child())
             icon.set_from_gicon(docset.icon)
             self.docset_btn.set_tooltip_text(docset.title)
+
+            menu = Gio.Menu()
+            menu.append("All", f"win.change_section({GLib.Variant.new_string('All')})")
+            for name, count in self.docset.symbol_counts.items():
+                menu.append(
+                    name, f"win.change_section({GLib.Variant.new_string(name)})"
+                )
+
+            self.section_btn.set_visible(True)
+            self.section_btn.set_menu_model(menu)
+
+            self.clear_docset_btn.set_visible(True)
         else:
             self.entry.set_placeholder_text("Press Ctrl+P to filter docsets")
             self.docset_btn.set_visible(False)
+            self.section_btn.set_visible(False)
+            self.clear_docset_btn.set_visible(False)
 
     @property
     def section(self) -> Section:
@@ -134,28 +156,23 @@ class Locator(Adw.Bin):
         self.search_provider.section = section
 
         if section:
-            menu = Gio.Menu()
-            # menu.append("All", f"win.change_section({GLib.Variant.new_string('All')})")
-            for name, count in self.docset.symbol_counts.items():
-                menu.append(
-                    name, f"win.change_section({GLib.Variant.new_string(name)})"
-                )
-
             self.section_btn.set_label(section.title)
-            self.section_btn.set_visible(True)
-            self.section_btn.set_menu_model(menu)
-        else:
-            self.section_btn.set_visible(False)
 
-    def toggle_focus(self, *args):
-        if not self.entry.get_focus_child():
-            self.entry.grab_focus()
-        
-        self.on_search_result_items_changed()
+    @Gtk.Template.Callback()
+    def toggle_focus(self, *_):
+        self.popover.set_visible(True)
 
     def on_search_result_items_changed(self, *args):
-        if self.search_result_model.get_n_items() > 0 and self.entry.get_focus_child():
-            self.popover.set_visible(True)
+        model_has_items = self.search_result_model.get_n_items() > 0
+        self.results_scrolled_win.set_visible(model_has_items)
+        self.status_page.set_visible(not model_has_items)
+
+        if model_has_items:
+            self.status_page.set_title("Search or Filter Docsets")
+            self.status_page.set_description(None)
+        else:
+            self.status_page.set_title("No Results Found")
+            self.status_page.set_description("Try a different search")
 
     def change_section(self, name: str):
         self.section = (
@@ -164,18 +181,13 @@ class Locator(Adw.Bin):
 
         self.search_changed()
 
-    def on_icon_pressed(self, entry, icon_position: Gtk.EntryIconPosition, *data):
-        if icon_position == Gtk.EntryIconPosition.SECONDARY:
-            text = cast(str, self.entry.get_text())
-            if text.strip():
-                self.entry.set_text("")
-            else:
-                self.clear_filters()
-
-    def clear_filters(self, *_):
+    def clear_filters(self, all=False):
         if self.section:
             self.section = None
-        elif self.docset:
+            if not all:
+                return
+
+        if self.docset:
             self.docset = None
 
     @property

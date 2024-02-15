@@ -38,6 +38,8 @@ class DocPage(Adw.Bin):
         type=float, default=1.0, flags=GObject.ParamFlags.READWRITE
     )
     zoom_step = 0.1
+    content_page = None
+    symbols_frame = None
 
     def __init__(self, docset: DocSet = None, uri: str = None):
         super().__init__(hexpand=True, vexpand=True)
@@ -47,6 +49,13 @@ class DocPage(Adw.Bin):
         self.web_view.connect("load-changed", self.on_load_changed)
         self.web_view.connect("context-menu", self.on_context_menu)
 
+        self.bind_property(
+            "title",
+            self.locator.search_btn.get_child(),
+            "label",
+            GObject.BindingFlags.DEFAULT,
+        )
+
         self.paned = Gtk.Paned(orientation=Gtk.Orientation.VERTICAL)
         self.sidebar.append(self.paned)
 
@@ -55,9 +64,9 @@ class DocPage(Adw.Bin):
         if uri:
             self.load_uri(uri)
         elif docset:
-            self.locator.docset = docset
-            self.load_uri(docset.index_file_path.as_uri())
+            self.docset = docset
         else:
+            self.content_page = self.get_child()
             new_page = NewPage()
             self.set_child(new_page)
 
@@ -104,8 +113,9 @@ class DocPage(Adw.Bin):
         symbols_frame.set_label("Symbols")
         symbols_frame.set_child(scrolled_window)
         add_symmetric_margins(symbols_frame, vertical=4, horizontal=4)
-
         self.paned.set_start_child(symbols_frame)
+
+        self.symbols_frame = symbols_frame
 
     def _setup_sections(self, factory, obj: GObject.Object):
         list_item = cast(Gtk.ListItem, obj)
@@ -353,3 +363,14 @@ class DocPage(Adw.Bin):
     @property
     def docset(self) -> DocSet:
         return self.locator.docset
+
+    @docset.setter
+    def docset(self, docset: DocSet):
+        self.locator.docset = docset
+        self.load_uri(docset.index_file_path.as_uri())
+
+        if not self.symbols_frame:
+            self._create_symbols_sections()
+
+        if isinstance(self.get_child(), NewPage):
+            self.set_child(self.content_page)

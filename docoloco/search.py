@@ -36,6 +36,9 @@ class SearchProvider(GObject.Object):
             else self.docset.search(word)
         )
 
+        if not results:
+            return
+
         self.result.splice(0, self.result.get_n_items(), results)
 
         if self.result.get_n_items() == 0:
