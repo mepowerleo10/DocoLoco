@@ -53,7 +53,7 @@ class Locator(Adw.Bin):
         self.popover.set_parent(self.search_btn)
 
         self.clear_docset_btn.connect(
-            "clicked", lambda *_: self.clear_filters(all=True)
+            "clicked", lambda *_: self.activate_action("win.clear_filters", GLib.Variant.new_boolean(True))
         )
 
     def setup_search_result(self, factory, obj: GObject.Object):
@@ -73,7 +73,6 @@ class Locator(Adw.Bin):
         arrow = Gtk.Image()
         arrow.set_from_icon_name("go-next-symbolic")
         box.append(arrow)
-        box.add_css_class("result-line")
         list_item.set_child(box)
 
     def bind_search_result(self, factory, obj: GObject.Object):
@@ -147,6 +146,7 @@ class Locator(Adw.Bin):
             self.docset_btn.set_visible(False)
             self.section_btn.set_visible(False)
             self.clear_docset_btn.set_visible(False)
+            self.search_changed()
 
     @property
     def section(self) -> Section:
@@ -163,9 +163,12 @@ class Locator(Adw.Bin):
     def toggle_focus(self, entry_filter_text: str = None):
         self.popover.set_visible(True)
 
-        if entry_filter_text:
+        if isinstance(entry_filter_text, str) and len(entry_filter_text) > 0:
             self.entry.set_text(entry_filter_text)
             self.entry.set_position(len(entry_filter_text))
+
+        self.search_changed()
+        self.entry.grab_focus()
 
     def on_search_result_items_changed(self, *args):
         model_has_items = self.search_result_model.get_n_items() > 0

@@ -23,6 +23,7 @@ class MainWindow(Adw.ApplicationWindow):
     go_forward_action: Gio.SimpleAction
 
     primary_menu_btn = cast(Gtk.MenuButton, Gtk.Template.Child("primary_menu_btn"))
+    toggle_side_pane_btn = cast(Gtk.Button, Gtk.Template.Child())
 
     def __init__(self, app: Adw.Application):
         super().__init__(application=app, title="DocoLoco")
@@ -77,8 +78,20 @@ class MainWindow(Adw.ApplicationWindow):
                 "<primary>F",
                 None,
             ),
-            ("focus_locator", self.focus_locator, "s", "<primary>P", f"({GLib.Variant.new_string('')})"),
-            ("clear_filters", self.clear_filters, None, "<Alt>BackSpace", None),
+            (
+                "focus_locator",
+                self.focus_locator,
+                "s",
+                "<primary>P",
+                f"({GLib.Variant.new_string('')})",
+            ),
+            (
+                "clear_filters",
+                self.clear_filters,
+                "b",
+                "<Alt>BackSpace",
+                f"({GLib.Variant.new_boolean(False)})",
+            ),
             ("zoom_in", self.zoom_in, None, "<primary>equal", None),
             ("zoom_out", self.zoom_out, None, "<primary>minus", None),
             ("reset_zoom", self.reset_zoom, None, "<primary>plus", None),
@@ -87,6 +100,7 @@ class MainWindow(Adw.ApplicationWindow):
             ("change_docset", self.change_docset, "(ssi)", None, None),
             ("change_section", self.change_section, "s", None, None),
             ("open_in_new_tab", self.open_in_new_tab, "(sss)", None, None),
+            ("toggle_sidepane", self.toggle_sidepane, None, "<primary>H", None),
             ("filter_docset", self.filter_docset, "s", None, None),
             ("close_tab", self.close_tab, None, "<primary>W", None),
             ("go_back", self.go_back, None, "<Alt>Left", None),
@@ -161,12 +175,12 @@ class MainWindow(Adw.ApplicationWindow):
         name = name_variant.get_string()
         self.selected_doc_page.locator.change_section(name)
 
-    def focus_locator(self, _, initial_text_variant = None):
+    def focus_locator(self, _, initial_text_variant=None):
         self.selected_doc_page.locator.toggle_focus(initial_text_variant.get_string())
 
-    def clear_filters(self, *_):
+    def clear_filters(self, _, all_variant):
         if self.selected_doc_page.locator.popover.get_focus_child():
-            self.selected_doc_page.locator.clear_filters()
+            self.selected_doc_page.locator.clear_filters(all_variant.get_boolean())
 
     def zoom_in(self, *args):
         self.selected_doc_page.zoom_in()
@@ -227,6 +241,13 @@ class MainWindow(Adw.ApplicationWindow):
             GLib.Variant("(ssi)", (provider_id, docset_name, 0)),
         )
         self.activate_action("win.open_page", GLib.Variant.new_string(url))
+
+    def toggle_sidepane(self, *_):
+        if not self.selected_doc_page.has_docset:
+            return
+
+        split_view = cast(Adw.OverlaySplitView, self.selected_doc_page.get_child())
+        split_view.set_collapsed(not split_view.get_collapsed())
 
     def close_tab(self, action, *parameters):
         self.tab_view.close_page(

@@ -39,7 +39,7 @@ class DocPage(Adw.Bin):
     )
     zoom_step = 0.1
     content_page = None
-    symbols_frame = None
+    symbols_frame = Gtk.Frame()
 
     def __init__(self, docset: DocSet = None, uri: str = None):
         super().__init__(hexpand=True, vexpand=True)
@@ -88,6 +88,7 @@ class DocPage(Adw.Bin):
 
     def _create_symbols_sections(self):
         if not self.docset or len(self.docset.sections) == 0:
+            self.symbols_frame.set_visible(False)
             return
 
         sections_list_store = Gio.ListStore(item_type=Section)
@@ -109,13 +110,11 @@ class DocPage(Adw.Bin):
         scrolled_window.set_child(sections_tree)
         scrolled_window.set_vexpand(True)
 
-        symbols_frame = Gtk.Frame()
-        symbols_frame.set_label("Symbols")
-        symbols_frame.set_child(scrolled_window)
-        add_symmetric_margins(symbols_frame, vertical=4, horizontal=4)
-        self.paned.set_start_child(symbols_frame)
-
-        self.symbols_frame = symbols_frame
+        self.symbols_frame.set_label("Symbols")
+        self.symbols_frame.set_child(scrolled_window)
+        self.symbols_frame.set_visible(True)
+        add_symmetric_margins(self.symbols_frame, vertical=4, horizontal=4)
+        self.paned.set_start_child(self.symbols_frame)
 
     def _setup_sections(self, factory, obj: GObject.Object):
         list_item = cast(Gtk.ListItem, obj)
@@ -227,6 +226,10 @@ class DocPage(Adw.Bin):
                 self.progress_bar.set_visible(False)
 
                 self.related_docs.remove_all()
+
+                if not self.docset:
+                    return
+
                 for doc in self.docset.related_docs_of(web_view.get_uri()):
                     self.related_docs.append(doc)
 
@@ -340,6 +343,10 @@ class DocPage(Adw.Bin):
     def can_go_forward(self) -> bool:
         return self.web_view.can_go_forward() if self.web_view else False
 
+    @GObject.Property(type=bool, default=False)
+    def has_docset(self) -> bool:
+        return self.locator.docset is not None
+
     def go_forward(self, *args):
         return self.web_view.go_forward()
 
@@ -368,9 +375,7 @@ class DocPage(Adw.Bin):
     def docset(self, docset: DocSet):
         self.locator.docset = docset
         self.load_uri(docset.index_file_path.as_uri())
-
-        if not self.symbols_frame:
-            self._create_symbols_sections()
+        self._create_symbols_sections()
 
         if isinstance(self.get_child(), NewPage):
             self.set_child(self.content_page)

@@ -60,6 +60,7 @@
             <property name="width-request">450</property>
             <child>
               <object class="GtkListView" id="results_view">
+                <property name="css-classes">results-view</property>
                 <property name="enable-rubberband">True</property>
                 <property name="hexpand">True</property>
                 <property name="hexpand-set">True</property>

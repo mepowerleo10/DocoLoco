@@ -1,15 +1,18 @@
-.result-line {
-  padding: 4px;
-  border-radius: 4px;
-  border-color: red;
-}
-
 .search-box {
   padding-left: 0;
-  background-color: #302E32FF;
+  background-color: @view_bg_color;
   border-radius: 6px;
 }
 
 .locator-entry image.left {
   margin-right: 8px;
+}
+
+.results-view {
+  border-radius: 4px;
+}
+
+.results-view row {
+  border-radius: 4px;
+  padding: 8px;
 }
