@@ -226,6 +226,10 @@ class DocPage(Adw.Bin):
                 self.progress_bar.set_visible(False)
 
                 self.related_docs.remove_all()
+
+                if not self.docset:
+                    return
+
                 for doc in self.docset.related_docs_of(web_view.get_uri()):
                     self.related_docs.append(doc)
 
@@ -338,6 +342,10 @@ class DocPage(Adw.Bin):
     @GObject.Property(type=bool, default=False)
     def can_go_forward(self) -> bool:
         return self.web_view.can_go_forward() if self.web_view else False
+
+    @GObject.Property(type=bool, default=False)
+    def has_docset(self) -> bool:
+        return self.locator.docset is not None
 
     def go_forward(self, *args):
         return self.web_view.go_forward()

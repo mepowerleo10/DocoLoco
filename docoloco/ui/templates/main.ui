@@ -22,6 +22,12 @@
                 <child type="start">
                   <object class="GtkBox">
                     <child>
+                      <object class="GtkButton" id="toggle_side_pane_btn">
+                        <property name="action-name">win.toggle_sidepane</property>
+                        <property name="icon-name">panel-left-symbolic</property>
+                      </object>
+                    </child>
+                    <child>
                       <object class="GtkButton">
                         <property name="action-name">win.go_back</property>
                         <property name="icon-name">go-previous-symbolic</property>
