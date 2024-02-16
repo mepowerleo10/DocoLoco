@@ -39,7 +39,6 @@ class DocPage(Adw.Bin):
     )
     zoom_step = 0.1
     content_page = None
-    symbols_frame = Gtk.Frame()
 
     def __init__(self, docset: DocSet = None, uri: str = None):
         super().__init__(hexpand=True, vexpand=True)
@@ -56,6 +55,7 @@ class DocPage(Adw.Bin):
             GObject.BindingFlags.DEFAULT,
         )
 
+        self.symbols_frame = Gtk.Frame()
         self.paned = Gtk.Paned(orientation=Gtk.Orientation.VERTICAL)
         self.sidebar.append(self.paned)
 
