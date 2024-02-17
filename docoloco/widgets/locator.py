@@ -8,7 +8,7 @@ from ..search import SearchProvider, SearchResult
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gio, GLib, GObject, Gtk  # noqa: E402
+from gi.repository import Adw, Gdk, Gio, GLib, GObject, Gtk  # noqa: E402
 
 
 @Gtk.Template(filename=default_config.template("locator"))
@@ -53,8 +53,15 @@ class Locator(Adw.Bin):
         self.popover.set_parent(self.search_btn)
 
         self.clear_docset_btn.connect(
-            "clicked", lambda *_: self.activate_action("win.clear_filters", GLib.Variant.new_boolean(True))
+            "clicked",
+            lambda *_: self.activate_action(
+                "win.clear_filters", GLib.Variant.new_boolean(True)
+            ),
         )
+
+        key_event_controller = Gtk.EventControllerKey()
+        key_event_controller.connect("key-released", self.on_key_released)
+        self.popover.add_controller(key_event_controller)
 
     def setup_search_result(self, factory, obj: GObject.Object):
         list_item = cast(Gtk.ListItem, obj)
@@ -201,3 +208,22 @@ class Locator(Adw.Bin):
     @property
     def search_result_model(self) -> Gio.ListStore:
         return self.search_provider.result
+
+    def on_key_released(
+        self, controller: Gtk.EventControllerKey, keycode, _, modifier_flags
+    ):
+        entry_is_focused = self.entry.get_state_flags() & Gtk.StateFlags.FOCUS_WITHIN
+        results_is_focused = (
+            self.results_view.get_state_flags() & Gtk.StateFlags.FOCUS_WITHIN
+        )
+
+        control_is_held = modifier_flags & Gdk.ModifierType.CONTROL_MASK
+        alt_is_held = modifier_flags & Gdk.ModifierType.ALT_MASK
+
+        if (keycode == Gdk.KEY_Return or keycode == Gdk.KEY_Down) and entry_is_focused:
+            self.results_view.grab_focus()
+        elif keycode == Gdk.KEY_Up and results_is_focused:
+            if self.search_selection_model.get_selected() == 0 or control_is_held:
+                self.entry.grab_focus()
+        elif keycode == Gdk.KEY_BackSpace and alt_is_held:
+            self.activate_action("win.clear_filters", GLib.Variant.new_boolean(True))
