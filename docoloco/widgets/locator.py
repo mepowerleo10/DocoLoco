@@ -151,8 +151,11 @@ class Locator(Adw.Bin):
         else:
             self.entry.set_placeholder_text("Press Ctrl+P to filter docsets")
             self.docset_btn.set_visible(False)
-            self.section_btn.set_visible(False)
             self.clear_docset_btn.set_visible(False)
+
+            self.section_btn.set_visible(False)
+            self.section_btn.set_menu_model(None)
+
             self.search_changed()
 
     @property
@@ -162,9 +165,16 @@ class Locator(Adw.Bin):
     @section.setter
     def section(self, section: Section):
         self.search_provider.section = section
+        search_btn_content = cast(Adw.ButtonContent, self.search_btn.get_child())
 
         if section:
             self.section_btn.set_label(section.title)
+            search_btn_content.set_icon_name(section.icon_name)
+        else:
+            self.section_btn.set_label("All")
+            search_btn_content.set_icon_name("open-menu-symbolic")
+
+        self.search_changed()
 
     @Gtk.Template.Callback()
     def toggle_focus(self, entry_filter_text: str = None):
@@ -220,10 +230,14 @@ class Locator(Adw.Bin):
         control_is_held = modifier_flags & Gdk.ModifierType.CONTROL_MASK
         alt_is_held = modifier_flags & Gdk.ModifierType.ALT_MASK
 
-        if (keycode == Gdk.KEY_Return or keycode == Gdk.KEY_Down) and entry_is_focused:
+        if keycode == Gdk.KEY_Escape:
+            self.popover.set_visible(False)
+        elif (
+            keycode == Gdk.KEY_Return or keycode == Gdk.KEY_Down
+        ) and entry_is_focused:
             self.results_view.grab_focus()
         elif keycode == Gdk.KEY_Up and results_is_focused:
             if self.search_selection_model.get_selected() == 0 or control_is_held:
                 self.entry.grab_focus()
         elif keycode == Gdk.KEY_BackSpace and alt_is_held:
-            self.activate_action("win.clear_filters", GLib.Variant.new_boolean(True))
+            self.activate_action("win.clear_filters", GLib.Variant.new_boolean(False))
