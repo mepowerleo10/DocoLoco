@@ -179,7 +179,10 @@ class MainWindow(Adw.ApplicationWindow):
         self.selected_doc_page.locator.toggle_focus(initial_text_variant.get_string())
 
     def clear_filters(self, _, all_variant):
-        if self.selected_doc_page.locator.popover.get_focus_child():
+        if (
+            self.selected_doc_page.locator.popover.get_state_flags()
+            & Gtk.StateFlags.FOCUS_WITHIN
+        ):
             self.selected_doc_page.locator.clear_filters(all_variant.get_boolean())
 
     def zoom_in(self, *args):
