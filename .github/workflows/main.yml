@@ -38,6 +38,6 @@ jobs:
           data/
           dist/
           install-flatpak.sh
-          org.docoloco.DocoLoco.yaml
+          io.github.mepowerleo10.DocoLoco.yaml
 
 
