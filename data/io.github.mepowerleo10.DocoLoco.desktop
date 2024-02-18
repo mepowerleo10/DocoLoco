@@ -5,3 +5,4 @@ Name=DocoLoco
 Comment=Development Documentation Browser
 Exec=
 Terminal=false
+Icon=io.github.mepowerleo10.DocoLoco

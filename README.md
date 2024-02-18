@@ -95,11 +95,11 @@ To get started with DocoLoco, follow these steps:
 
    Run the following command to install the flatpak command:
    ```
-   flatpak-builder build-dir org.docoloco.DocoLoco.yaml --install --user --force-clean 
+   flatpak-builder build-dir io.github.mepowerleo10.DocoLoco.yaml --install --user --force-clean 
    ```
    That's it! You can find the app in you apps menu now. Or run this command to open it from the command line:
    ```
-   flatpak run org.docoloco.DocoLoco.Devel
+   flatpak run io.github.mepowerleo10.DocoLoco.Devel
    ```
 
 ### Release Package Installation

@@ -1,0 +1,51 @@
+app-id: io.github.mepowerleo10.DocoLoco
+runtime: org.gnome.Platform
+runtime-version: "45"
+tags:
+  - devel
+  - development
+  - nightly
+sdk: org.gnome.Sdk
+command: docoloco
+build-options:
+  env:
+    - PYTHON=python3.11
+  build-args:
+    - --share=network
+  test-args:
+    - --socket=wayland
+finish-args:
+  - --socket=fallback-x11
+  - --share=ipc
+  - --socket=wayland
+  - --share=network
+  - --device=dri
+  - --socket=session-bus
+  - --talk-name=org.gtk.vfs.*
+  - --filesystem=xdg-run/gvfsd
+  - --filesystem=xdg-cache/DocoLoco:create
+  - --filesystem=xdg-data/Zeal:ro
+  - --filesystem=/usr/share/man:ro
+modules:
+  # - name: mandoc
+  #   sources:
+  #     - type: archive
+  #       url: https://mandoc.bsd.lv/snapshots/mandoc.tar.gz
+  #       sha256: 8bf0d570f01e70a6e124884088870cbed7537f36328d512909eb10cd53179d9c
+  - name: install
+    buildsystem: simple
+    build-commands:
+      - python --version
+      - pip3 install --prefix=${FLATPAK_DEST} docoloco-0-py3-none-any.whl
+    sources:
+      - type: file
+        path: dist/docoloco-0-py3-none-any.whl
+  - name: copy_data_dependencies
+    buildsystem: simple
+    build-commands:
+      - mkdir -p ${FLATPAK_DEST}/share/{applications,icons/hicolor/512x512/apps/}
+      - cp io.github.mepowerleo10.DocoLoco.desktop ${FLATPAK_DEST}/share/applications/${FLATPAK_ID}.desktop
+      - cp io.github.mepowerleo10.DocoLoco.png ${FLATPAK_DEST}/share/icons/hicolor/512x512/apps/${FLATPAK_ID}.png
+    sources:
+      - type: dir
+        path: data
