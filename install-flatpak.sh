@@ -1,3 +1,3 @@
 #!/bin/bash
 
-flatpak-builder build-dir org.docoloco.DocoLoco.yaml --install --user --force-clean
+flatpak-builder build-dir io.github.mepowerleo10.DocoLoco.yaml --install --user --force-clean

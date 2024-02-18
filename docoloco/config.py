@@ -4,7 +4,7 @@ from typing import Dict
 import yaml
 from gi.repository import GLib
 
-APPLICATION_ID = "org.docoloco.DocoLoco"
+APPLICATION_ID = "io.github.mepowerleo10.DocoLoco"
 
 
 class Config:
