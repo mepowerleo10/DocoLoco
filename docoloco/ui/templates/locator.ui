@@ -114,6 +114,7 @@
             <signal name="clicked" handler="toggle_focus"/>
             <child>
               <object class="AdwButtonContent">
+                <property name="can-shrink">True</property>
                 <property name="icon-name">open-menu-symbolic</property>
                 <property name="label">Press Ctrl+P to Search</property>
               </object>

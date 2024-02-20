@@ -187,6 +187,7 @@
 	(6,28,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
 	(6,28,"GtkWidget","hexpand-set","True",None,None,None,None,None,None,None,None,None),
 	(6,28,"GtkWidget","width-request","450",None,None,None,None,None,None,None,None,None),
+	(6,29,"AdwButtonContent","can-shrink","True",None,None,None,None,None,None,None,None,None),
 	(6,29,"AdwButtonContent","icon-name","open-menu-symbolic",None,None,None,None,None,None,None,None,None),
 	(6,29,"AdwButtonContent","label","Press Ctrl+P to Search",None,None,None,None,None,None,None,None,None),
 	(6,30,"GtkWidget","css-classes","search-box",None,None,None,None,None,None,None,None,None),
